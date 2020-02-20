@@ -1,0 +1,3 @@
+export-ignore tests
+export-ignore resources
+export-ignore webpack.mix.js
