@@ -49,7 +49,7 @@ use SinglePage;
 class Controller extends Package
 {
     protected $pkgHandle = 'migration_tool';
-    protected $appVersionRequired = '8.3.1';
+    protected $appVersionRequired = '9.0.0a1';
     protected $pkgVersion = '9.0.0a1';
     protected $pkgAutoloaderMapCoreExtensions = true;
     protected $pkgAutoloaderRegistries = array(

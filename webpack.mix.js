@@ -7,7 +7,7 @@ mix.webpackConfig({
 });
 
 // Set our public path
-mix.setPublicPath('packages/migration_tool/assets');
+mix.setPublicPath('assets');
 
 // Build themes
 mix
