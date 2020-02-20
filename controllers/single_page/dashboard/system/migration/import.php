@@ -418,9 +418,7 @@ class Import extends DashboardPageController
                         }
 
                         $response = $ih->import($_FILES['file']['tmp_name'], $fvFilename, $folder, $fvPrefix);
-                        if (!($response instanceof \Concrete\Core\File\Version) && !compat_is_version_8()) {
-                            throw new \Exception(Importer::getErrorMessage($response));
-                        } elseif (!($response instanceof \Concrete\Core\Entity\File\Version) && compat_is_version_8()) {
+                        if (!($response instanceof \Concrete\Core\Entity\File\Version)) {
                             throw new \Exception(Importer::getErrorMessage($response));
                         } else {
                             $file = $response->getFile();

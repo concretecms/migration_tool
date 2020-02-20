@@ -108,8 +108,6 @@ class Controller extends Package
 
     protected function installSinglePages($pkg)
     {
-        require_once $this->getPackagePath() . '/helpers.php';
-
         foreach ($this->singlePages as $path) {
             if (Page::getByPath($path)->getCollectionID() <= 0) {
                 SinglePage::add($path, $pkg);
@@ -132,8 +130,6 @@ class Controller extends Package
 
     public function on_start()
     {
-        require $this->getPackagePath() . '/helpers.php';
-
         \Core::bind('migration/batch/page/validator', function ($app, $batch) {
             if (isset($batch[0])) {
                 $validator = new StandardValidator($batch[0]);
