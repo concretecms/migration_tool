@@ -29,7 +29,7 @@ class ValidateBlockTypesStage implements StageInterface
             $item = new BlockItem($block);
             $targetItem = $targetItemList->getSelectedTargetItem($item);
             if ($targetItem instanceof UnmappedTargetItem) {
-                $validatorMessages->addMessage(
+                $validatorMessages->add(
                     new Message(t('Block type <strong>%s</strong> does not exist.', $item->getIdentifier()))
                 );
             }
@@ -67,7 +67,7 @@ class ValidateBlockTypesStage implements StageInterface
                 }
             }
             if (!$found) {
-                $validatorMessages->addMessage(
+                $validatorMessages->add(
                     new Message(t('Page Type Defaults Output Reference <strong>%s</strong> not found within corresponding defaults.', $block->getDefaultsOutputIdentifier()))
                 );
             }

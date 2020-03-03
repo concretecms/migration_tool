@@ -1,5 +1,5 @@
 <?php
-namespace PortlandLabs\Concrete5\MigrationTool\Batch\Validator\User\Task;
+namespace PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Pipeline\Stage;
 
 use League\Pipeline\StageInterface;
 use PortlandLabs\Concrete5\MigrationTool\Batch\ContentMapper\Item\Item;
@@ -35,11 +35,12 @@ class ValidateUserGroupsStage implements StageInterface
             }
             $targetItem = $targetItemList->getSelectedTargetItem($item);
             if ($targetItem instanceof UnmappedTargetItem) {
-                $result->getMessages()->addMessage(
+                $result->getMessages()->add(
                     new Message(t('Group <strong>%s</strong> does not exist.', $item->getIdentifier()))
                 );
             }
         }
+        return $result;
     }
 
 }

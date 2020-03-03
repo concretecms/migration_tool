@@ -25,14 +25,14 @@ class ValidateExpressAttributesStage extends ValidateAttributesStage
             $targetItem = $targetItemList->getSelectedTargetItem($item);
             if (!($targetItem instanceof IgnoredTargetItem)) {
                 if ($targetItem instanceof UnmappedTargetItem) {
-                    $result->getMessages()->addMessage(
+                    $result->getMessages()->add(
                         new Message(t('Attribute <strong>%s</strong> for entity <strong>%s</strong> does not exist.', $attribute->getAttribute()->getHandle(), $entity->getEntity()), Message::E_WARNING)
                     );
                 }
 
                 $value = $attribute->getAttribute()->getAttributeValue();
                 if ($value instanceof ImportedAttributeValue) {
-                    $result->getMessages()->addMessage(
+                    $result->getMessages()->add(
                         new Message(t('Attribute <strong>%s</strong> for entity <strong>%s</strong> could not be mapped to a known attribute type. It may not be fully imported.', $attribute->getAttribute()->getHandle(), $entity->getEntity()), Message::E_WARNING)
                     );
                 }
@@ -42,7 +42,7 @@ class ValidateExpressAttributesStage extends ValidateAttributesStage
                     $r = $validator->validate($value);
                     if (is_object($r)) {
                         foreach ($r as $message) {
-                            $result->getMessages()->addMessage($message);
+                            $result->getMessages()->add($message);
                         }
                     }
                 }

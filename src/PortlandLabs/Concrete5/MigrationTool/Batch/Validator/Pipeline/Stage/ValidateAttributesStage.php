@@ -34,14 +34,14 @@ class ValidateAttributesStage implements StageInterface
             $targetItem = $targetItemList->getSelectedTargetItem($item);
             if (!($targetItem instanceof IgnoredTargetItem)) {
                 if ($targetItem instanceof UnmappedTargetItem) {
-                    $result->getMessages()->addMessage(
+                    $result->getMessages()->add(
                         new Message(t('Attribute <strong>%s</strong> does not exist.', $item->getIdentifier()), Message::E_WARNING)
                     );
                 }
 
                 $value = $attribute->getAttribute()->getAttributeValue();
                 if ($value instanceof ImportedAttributeValue) {
-                    $result->getMessages()->addMessage(
+                    $result->getMessages()->add(
                         new Message(t('Attribute <strong>%s</strong> could not be mapped to a known attribute type. It may not be fully imported.', $item->getIdentifier()), Message::E_WARNING)
                     );
                 }

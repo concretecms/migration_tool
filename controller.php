@@ -22,8 +22,8 @@ use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Pipeline\Stage\Validate
 use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Pipeline\Stage\ValidateReferencedContentItemsStage;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Pipeline\Stage\ValidateReferencedStacksStage;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Pipeline\Stage\ValidateUsersStage;
+use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Pipeline\Stage\ValidateUserGroupsStage;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\StandardValidator;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\User\Task\ValidateUserGroupsStage;
 use PortlandLabs\Concrete5\MigrationTool\Event\EventSubscriber;
 use PortlandLabs\Concrete5\MigrationTool\Exporter\Item\Type\Manager as ExporterItemTypeManager;
 use PortlandLabs\Concrete5\MigrationTool\Importer\CIF\Attribute\Category\Manager as AttributeCategoryManager;

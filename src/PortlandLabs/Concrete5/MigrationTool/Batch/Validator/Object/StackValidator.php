@@ -22,8 +22,8 @@ class StackValidator implements ValidatorInterface
         foreach($blocks as $block) {
             $blockSubject = new BatchObjectValidatorSubject($subject->getBatch(), $block);
             $blockResult = $validator->validate($blockSubject);
+            $result->getMessages()->addMessages($blockResult->getMessages());
         }
-        $result->getMessages()->addMessages($blockResult->getMessages());
         return $result;
     }
 }
