@@ -19,7 +19,7 @@ class CreateUsersRoutine implements RoutineInterface
         $commands = array();
         foreach ($events->getUsers() as $user) {
             if (!$user->getPublisherValidator()->skipItem()) {
-                $command = new CreateUserCommand($batch, $logger, $user->getId());
+                $command = new CreateUserCommand($batch->getId(), $logger->getLog()->getId(), $user->getId());
                 $commands[] = $command;
             }
         }
