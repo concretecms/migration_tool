@@ -32,7 +32,7 @@ class ExpressEntityValidator implements ValidatorInterface
 
                 $validator = $key->getRecordValidator($subject->getBatch());
                 if (is_object($validator)) {
-                    $r = $validator->validate($key);
+                    $subject = new BatchObjectValidatorSubject($subject->getBatch(), $key);
                     $result->getMessages()->addMessages($r);
                 }
             }
