@@ -18,7 +18,7 @@ class MapContentTypesBatchProcessFactory implements BatchProcessFactoryInterface
         $this->app = $app;
     }
 
-    public function getBatchHandle()
+    public function getBatchHandle(): string
     {
         return 'map_content_types';
     }

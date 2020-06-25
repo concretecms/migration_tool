@@ -90,7 +90,7 @@ class TransformContentTypesCommand implements BatchableCommandInterface
 
 
 
-    public function getBatchHandle()
+    public function getBatchHandle(): string
     {
         return 'transform_content_types';
     }

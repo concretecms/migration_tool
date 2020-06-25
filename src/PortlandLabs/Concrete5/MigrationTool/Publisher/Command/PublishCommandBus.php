@@ -8,12 +8,12 @@ use PortlandLabs\Concrete5\MigrationTool\Publisher\Command\Middleware\PublisherE
 class PublishCommandBus extends AbstractSynchronousBus
 {
 
-    public static function getHandle()
+    public static function getHandle(): string
     {
         return 'publish';
     }
 
-    public function getMiddleware()
+    public function getMiddleware(): array
     {
         return [
             $this->app->make(PublisherExceptionHandlingMiddleware::class)

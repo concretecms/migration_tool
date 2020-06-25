@@ -26,7 +26,7 @@ class PublishBatchBatchProcessFactory implements BatchProcessFactoryInterface
         $this->logger = $logger;
     }
 
-    public function getBatchHandle()
+    public function getBatchHandle(): string
     {
         return 'publish_batch';
     }

@@ -56,7 +56,7 @@ abstract class PublisherCommand implements BatchableCommandInterface, QueueableC
     }
 
 
-    public function getBatchHandle()
+    public function getBatchHandle(): string
     {
         return 'publish_batch';
     }

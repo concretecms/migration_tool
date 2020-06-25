@@ -69,7 +69,7 @@ class MapContentTypesCommand implements BatchableCommandInterface
         $this->item = $item;
     }
 
-    public function getBatchHandle()
+    public function getBatchHandle(): string
     {
         return 'map_content_types';
     }

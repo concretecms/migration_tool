@@ -19,7 +19,7 @@ class TransformContentTypesBatchProcessFactory implements BatchProcessFactoryInt
         $this->app = $app;
     }
 
-    public function getBatchHandle()
+    public function getBatchHandle(): string
     {
         return 'transform_content_types';
     }
