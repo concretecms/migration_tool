@@ -64,17 +64,6 @@ $dh = Core::make('helper/date');
 
     <div style="display: none">
 
-        <div data-progress-bar="rescan">
-            <div class="ccm-ui">
-                <h4 data-progress-bar-title="rescan"></h4>
-                <div data-progress-bar-wrapper="rescan">
-                    <div class="progress progress-bar-striped progress-striped active">
-                        <div class="progress-bar" style="width: 100%;"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div data-dialog-wrapper="delete-batch"">
         <div id="ccm-dialog-delete-batch" class="ccm-ui">
             <form method="post" action="<?= $view->action('delete_batch') ?>">
@@ -163,14 +152,6 @@ $dh = Core::make('helper/date');
         <div id="ccm-dialog-create-content" class="ccm-ui">
             <form method="post">
                 <p data-description="create-content"><?= t('Create site content from the contents of this batch?') ?></p>
-                <div data-progress-bar="create-content" style="display: none">
-                    <h4 data-progress-bar-title="create-content"></h4>
-                    <div data-progress-bar-wrapper="create-content">
-                        <div class="progress progress-striped active">
-                            <div class="progress-bar" style="width: 0%;"></div>
-                        </div>
-                    </div>
-                </div>
 
                 <div class="dialog-buttons">
                     <button class="btn btn-light float-left"
@@ -205,14 +186,6 @@ $dh = Core::make('helper/date');
                     <div class="radio">
                         <label><input type="radio" name="importMethod" value="append"> <?= t('Add content to batch.') ?>
                         </label>
-                    </div>
-                </div>
-                <div data-progress-bar="add-to-batch" style="display: none">
-                    <h4 data-progress-bar-title="add-to-batch"></h4>
-                    <div data-progress-bar-wrapper="add-to-batch">
-                        <div class="progress progress-striped active">
-                            <div class="progress-bar" style="width: 100%;"></div>
-                        </div>
                     </div>
                 </div>
             </form>
@@ -251,80 +224,29 @@ $dh = Core::make('helper/date');
 <?php } ?>
 
 <script type="text/javascript">
-    showRescanDialog = function () {
-        $('[data-progress-bar=rescan]').jqdialog({
-            autoOpen: true,
-            height: 'auto',
-            width: 400,
-            modal: true,
-            dialogClass: 'ccm-ui',
-            title: '<?=t("Scanning Batch")?>',
-            closeOnEscape: false,
-            open: function (e, ui) {
 
-            }
-        });
-    }
+    rescanBatchItems = function () {
 
-    rescanBatchItems = function ($element) {
-
-        $('h4[data-progress-bar-title]').html('<?=t('Normalizing Page Paths...')?>');
-
-
+        jQuery.fn.dialog.showLoader();
+        var data = [];
+        data.push({'name': 'id', 'value': '<?=$batch->getID()?>'});
+        data.push({'name': 'ccm_token', 'value': '<?=Loader::helper('validation/token')->generate('rescan_batch_items')?>'});
         $.concreteAjax({
-            loader: false,
-            url: '<?=$view->action('run_batch_content_normalize_page_paths_task')?>',
-            type: 'POST',
-            data: [
-                {'name': 'id', 'value': '<?=$batch->getID()?>'},
-                {
-                    'name': 'ccm_token',
-                    'value': '<?=Core::make('token')->generate('run_batch_content_normalize_page_paths_task')?>'
-                }
-            ],
-            success: function (r) {
-                $('h4[data-progress-bar-title]').html('<?=t('Mapping Content Types...')?>');
-                new ConcreteProgressiveOperation({
-                    url: '<?=$view->action('run_batch_content_map_content_types_task')?>',
-                    title: <?=json_encode(t('Mapping Content Items'))?>,
-                    data: [
-                        {'name': 'id', 'value': '<?=$batch->getID()?>'},
-                        {
-                            'name': 'ccm_token',
-                            'value': '<?=Core::make('token')->generate('run_batch_content_map_content_types_task')?>'
-                        }
-                    ],
-                    element: $element,
-                    onComplete: function() {
-                        $('h4[data-progress-bar-title]').html('<?=t('Transforming Content Types...')?>');
-                        new ConcreteProgressiveOperation({
-                            url: '<?=$view->action('run_batch_content_transform_content_types_task')?>',
-                            title: <?=json_encode(t('Transforming Content Items'))?>,
-                            data: [
-                                {'name': 'id', 'value': '<?=$batch->getID()?>'},
-                                {
-                                    'name': 'ccm_token',
-                                    'value': '<?=Core::make('token')->generate('run_batch_content_transform_content_types_task')?>'
-                                }
-                            ],
-                            onComplete: function() {
-                                window.location.reload();
-                            },
-                            element: $element
-                        });
-
-                    }
-                });
+            data: data,
+            url: '<?=$view->action('rescan_batch_items')?>',
+            success: function() {
+                window.location.reload();
             }
         });
+
+
     }
 
     $(function () {
 
         $('a[data-action=rescan-batch]').on('click', function (e) {
             e.preventDefault();
-            showRescanDialog();
-            rescanBatchItems($('div[data-progress-bar-wrapper=rescan]'));
+            rescanBatchItems();
         });
 
         $('button[data-action=publish-content]').on('click', function (e) {
@@ -375,8 +297,7 @@ $dh = Core::make('helper/date');
                     // Nothing - we don't want the loader
                 },
                 success: function (r) {
-                    submitSuccess = true;
-                    rescanBatchItems($('div[data-progress-bar-wrapper=add-to-batch]'));
+                    window.location.reload();
                 },
                 complete: function () {
                     if (!submitSuccess) {

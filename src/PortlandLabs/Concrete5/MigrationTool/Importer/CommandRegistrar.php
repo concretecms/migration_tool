@@ -111,6 +111,7 @@ class CommandRegistrar
 
     public function register()
     {
+        /*
         $locator = $this->app->getCommandDispatcher();
         $locator->registerCommand($this->app->make(MapContentTypesCommandHandler::class), MapContentTypesCommand::class);
         $locator->registerCommand($this->app->make(TransformContentTypesCommandHandler::class), TransformContentTypesCommand::class);
@@ -161,6 +162,6 @@ class CommandRegistrar
         $locator->registerCommand($this->app->make(PublishPageContentCommandHandler::class), PublishPageContentCommand::class, 'publish');
         $locator->registerCommand($this->app->make(CreateSitesCommandHandler::class), CreateSitesCommand::class, 'publish');
         $locator->registerCommand($this->app->make(ClosePublisherLogCommandHandler::class), ClosePublisherLogCommand::class, 'publish');
-
+        */
     }
 }

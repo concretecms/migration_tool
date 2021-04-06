@@ -3,11 +3,10 @@
 namespace PortlandLabs\Concrete5\MigrationTool\Batch\Command;
 
 use Concrete\Core\Application\Application;
-use Concrete\Core\Foundation\Queue\Batch\BatchProcessFactoryInterface;
 use PortlandLabs\Concrete5\MigrationTool\Batch\ContentMapper\EmptyMapper;
 use PortlandLabs\Concrete5\MigrationTool\Publisher\Logger\Logger;
 
-class PublishBatchBatchProcessFactory implements BatchProcessFactoryInterface
+class PublishBatchBatchProcessFactory
 {
 
     /**

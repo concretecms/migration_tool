@@ -2,10 +2,9 @@
 
 namespace PortlandLabs\Concrete5\MigrationTool\Batch\Command;
 
-use Concrete\Core\Foundation\Queue\Batch\Command\BatchableCommandInterface;
-use League\Tactician\Bernard\QueueableCommand;
+use Concrete\Core\Foundation\Command\Command;
 
-class TransformContentTypesCommand implements BatchableCommandInterface
+class TransformContentTypesCommand extends Command
 {
 
     protected $batchId;
@@ -88,11 +87,5 @@ class TransformContentTypesCommand implements BatchableCommandInterface
         $this->transformer = $transformer;
     }
 
-
-
-    public function getBatchHandle(): string
-    {
-        return 'transform_content_types';
-    }
 
 }

@@ -4,13 +4,10 @@ namespace PortlandLabs\Concrete5\MigrationTool\Batch;
 use Concrete\Core\Application\Application;
 use Concrete\Core\Entity\Site\Site;
 use Concrete\Core\File\Filesystem;
-use Concrete\Core\Foundation\Queue\Queue;
 use Concrete\Core\Page\Single;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Queue\QueueFactory;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch;
-use Concrete\Core\Foundation\Queue\QueueService;
 
 class BatchService
 {
@@ -26,25 +23,8 @@ class BatchService
         $this->filesystem = $filesystem;
     }
 
-    public function clearQueues(Batch $batch)
-    {
-        $factory = $this->application->make(QueueFactory::class);
-        $service = $this->application->make(QueueService::class);
-        $driverFactory = $this->application->make('queue/driver');
-        if ($queue = $factory->getMapperQueue($batch)) {
-            $driverFactory->removeQueue($queue);
-        }
-        if ($queue = $factory->getTransformerQueue($batch)) {
-            $driverFactory->removeQueue($queue);
-        }
-        if ($queue = $factory->getPublisherQueue($batch)) {
-            $driverFactory->removeQueue($queue);
-        }
-    }
-
     public function deleteBatch(Batch $batch)
     {
-        $this->clearQueues($batch);
         foreach ($batch->getObjectCollections() as $collection) {
             $this->entityManager->remove($collection);
         }

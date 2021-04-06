@@ -3,7 +3,6 @@
 namespace PortlandLabs\Concrete5\MigrationTool\Batch\Command;
 
 use Concrete\Core\Application\Application;
-use Concrete\Core\Foundation\Queue\Batch\Processor;
 use Concrete\Core\Foundation\Queue\Response\EnqueueItemsResponse;
 use Doctrine\ORM\EntityManager;
 use PortlandLabs\Concrete5\MigrationTool\Batch\BatchService;

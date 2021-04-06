@@ -2,9 +2,7 @@
 
 namespace PortlandLabs\Concrete5\MigrationTool\Batch\Command;
 
-use Concrete\Core\Foundation\Command\CommandInterface;
-
-class PublishBatchCommand implements CommandInterface
+class PublishBatchCommand
 {
 
     protected $batchId;

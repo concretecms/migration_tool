@@ -243,8 +243,10 @@ class Controller extends Package
         });
 
         // Add a custom bus to handle our publish commands
+        /*
         $dispatcher = $this->app->getCommandDispatcher();
         $dispatcher->addBus(new PublishCommandBus($this->app));
+        */
 
         $al = AssetList::getInstance();
         $al->register('javascript', 'migration_tool/backend', 'assets/js/backend.js', [], $this);
