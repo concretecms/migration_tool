@@ -59,11 +59,17 @@ class Batch implements BatchInterface
      **/
     public $preset_target_items;
 
+    /**
+     * @ORM\OneToMany(targetEntity="BatchProcess", mappedBy="batch", cascade={"persist", "remove"})
+     **/
+    public $batch_processes;
+
     public function __construct()
     {
         $this->date = new \DateTime();
         $this->collections = new ArrayCollection();
         $this->target_items = new ArrayCollection();
+        $this->batch_processes = new ArrayCollection();
     }
 
     /**
@@ -150,6 +156,17 @@ class Batch implements BatchInterface
     {
         return $this->collections->count() > 0;
     }
+
+    public function getBatchProcesses()
+    {
+        return $this->batch_processes;
+    }
+
+    public function setBatchProcesses($batch_processes): void
+    {
+        $this->batch_processes = $batch_processes;
+    }
+
 
     /**
      * Returns all pages from all page collection objects in the batch.

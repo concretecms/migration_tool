@@ -4,10 +4,9 @@ $dh = Core::make('helper/date');
 ?>
     <div class="ccm-dashboard-header-buttons">
 
-        <?php if ($activeQueue) { ?>
+        <?php if ($activeProcesses) { ?>
             <div class="btn-group btn-group">
-                <button class="btn btn-light" onclick="launchActiveQueue()"><?=t('Resume Active Process')?></button>
-                <a href="javascript:void(0)" class="btn btn-danger" data-dialog="clear-batch-queues"
+                <a href="javascript:void(0)" class="btn btn-danger" data-dialog-width="500" data-dialog="reset-processes"
                    data-dialog-title="<?= t('Reset All Processes') ?>"><?= t("Reset All Processes") ?></a>
             </div>
 
@@ -130,17 +129,17 @@ $dh = Core::make('helper/date');
         </div>
         </div>
 
-        <div data-dialog-wrapper="clear-batch-queues">
-            <div id="ccm-dialog-clear-batch-queues" class="ccm-ui">
-                <form method="post" action="<?= $view->action('clear_batch_queues') ?>">
-                    <?= Loader::helper("validation/token")->output('clear_batch_queues') ?>
+        <div data-dialog-wrapper="reset-processes">
+            <div id="ccm-dialog-reset-processes" class="ccm-ui">
+                <form method="post" action="<?= $view->action('reset_processes') ?>">
+                    <?= Loader::helper("validation/token")->output('reset_processes') ?>
                     <input type="hidden" name="id" value="<?= $batch->getID() ?>">
                     <p><?= t('Are you sure you reset all running processes for this batch? If someone else is actively importing content into the site it could affect them.') ?></p>
                     <div class="dialog-buttons">
-                        <button class="btn btn-light float-left"
+                        <button class="btn btn-secondary"
                                 onclick="jQuery.fn.dialog.closeTop()"><?= t('Cancel') ?></button>
-                        <button class="btn btn-danger float-right"
-                                onclick="$('#ccm-dialog-clear-batch-queues form').submit()"><?= t('Reset Processes') ?></button>
+                        <button class="btn btn-danger"
+                                onclick="$('#ccm-dialog-reset-processes form').submit()"><?= t('Reset Processes') ?></button>
                     </div>
                 </form>
             </div>
@@ -216,8 +215,9 @@ $dh = Core::make('helper/date');
         <p><?= $site->getSiteName() ?></p>
     <?php } ?>
 
-<?php if ($activeQueue) { ?>
-    <?php Loader::element('active_queue', array('batch' => $batch, 'queue' => $activeQueue), 'migration_tool'); ?>
+<?php if ($activeProcesses) { ?>
+
+    <?=$activeProcesses->render();?>
 
 <?php } else { ?>
     <?php Loader::element('batch', array('batch' => $batch), 'migration_tool'); ?>

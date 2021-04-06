@@ -8,6 +8,7 @@ use Concrete\Core\Command\Process\ProcessFactory;
 use Doctrine\ORM\EntityManager;
 use PortlandLabs\Concrete5\MigrationTool\Batch\ContentMapper\EmptyMapper;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch;
+use PortlandLabs\Concrete5\MigrationTool\Entity\Import\BatchProcess;
 
 class ScanContentTypesCommandHandler
 {
@@ -75,7 +76,13 @@ class ScanContentTypesCommandHandler
             }
 
             $concreteBatch = BatchBuilder::create(t('Scan Content Types'), $commands);
-            $this->processFactory->createWithBatch($concreteBatch);
+            $process = $this->processFactory->createWithBatch($concreteBatch);
+            $batchProcess = new BatchProcess();
+            $batchProcess->setBatch($batch);
+            $batchProcess->setProcess($process);
+            $batchProcess->setType(BatchProcess::TYPE_SCAN_CONTENT_TYPES);
+            $this->entityManager->persist($batchProcess);
+            $this->entityManager->flush();
         }
     }
 }

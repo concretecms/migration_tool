@@ -5,10 +5,12 @@ use Concrete\Core\File\Filesystem;
 use Concrete\Core\File\Importer;
 use Concrete\Core\File\Set\Set;
 use Concrete\Core\Command\Batch\Batch as BatchBuilder;
+use Concrete\Core\Filesystem\ElementManager;
 use Concrete\Core\Page\PageList;
 use Concrete\Package\MigrationTool\Page\Controller\DashboardPageController;
 use Doctrine\Common\Collections\ArrayCollection;
 use PortlandLabs\Concrete5\MigrationTool\Batch\BatchService;
+use PortlandLabs\Concrete5\MigrationTool\Batch\Command\DeleteBatchProcessesCommand;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Command\MapContentTypesBatchProcessFactory;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Command\MapContentTypesCommand;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Command\NormalizePagePathsCommand;
@@ -114,17 +116,18 @@ class Import extends DashboardPageController
         $this->view();
     }
 
-    public function clear_batch_queues()
+    public function reset_processes()
     {
-        if (!$this->token->validate('clear_batch_queues')) {
+        if (!$this->token->validate('reset_processes')) {
             $this->error->add($this->token->getErrorMessage());
         }
         if (!$this->error->has()) {
             $r = $this->entityManager->getRepository('\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch');
             $batch = $r->findOneById($this->request->request->get('id'));
             if (is_object($batch)) {
-                $service = $this->app->make(BatchService::class);
-                $service->clearQueues($batch);
+                $command = new DeleteBatchProcessesCommand($batch->getId());
+                $this->executeCommand($command);
+
                 $this->flash('success', t('Batch processes reset successfully.'));
                 $this->redirect('/dashboard/system/migration/import', 'view_batch', $batch->getId());
             }
@@ -332,6 +335,15 @@ class Import extends DashboardPageController
                 }
             }
             $service = $this->app->make(BatchService::class);
+            if ($batch->getBatchProcesses()->count()) {
+                $activeProcesses = $this->app->make(ElementManager::class)->get('process_list');
+                $processes = [];
+                foreach($batch->getBatchProcesses() as $batchProcess) {
+                    $processes[] = $batchProcess->getProcess();
+                }
+                $activeProcesses->getElementController()->setProcesses($processes);
+                $this->set('activeProcesses', $activeProcesses);
+            }
             $this->set('settings', $settings);
             $this->render('/dashboard/system/migration/view_batch');
         } else {

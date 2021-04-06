@@ -2,10 +2,8 @@
 namespace Concrete\Package\MigrationTool;
 
 use Concrete\Core\Asset\AssetList;
-use Concrete\Core\Foundation\Command\Dispatcher;
 use Concrete\Core\Package\Package;
 use Concrete\Core\Page\Type\Type;
-use League\Tactician\Bernard\Receiver\SeparateBusReceiver;
 use Page;
 use PortlandLabs\Concrete5\MigrationTool\Batch\ContentMapper\Manager;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\BatchValidator;
@@ -50,7 +48,7 @@ class Controller extends Package
 {
     protected $pkgHandle = 'migration_tool';
     protected $appVersionRequired = '9.0.0a1';
-    protected $pkgVersion = '9.0.0a1';
+    protected $pkgVersion = '9.0.0a2';
     protected $pkgAutoloaderMapCoreExtensions = true;
     protected $pkgAutoloaderRegistries = array(
         'src/PortlandLabs/Concrete5/MigrationTool' => '\PortlandLabs\Concrete5\MigrationTool',
@@ -260,7 +258,7 @@ class Controller extends Package
         $registrar = new CommandRegistrar($this->app);
         $registrar->register();
 
-        $subscriber = new EventSubscriber($this->app);
+        $subscriber = $this->app->make(EventSubscriber::class);
         $dispatcher = $this->app->make('director');
         $dispatcher->addSubscriber($subscriber);
     }
