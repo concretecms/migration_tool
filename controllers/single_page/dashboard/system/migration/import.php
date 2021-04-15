@@ -287,7 +287,9 @@ class Import extends DashboardPageController
             $this->error->add(t('Invalid batch.'));
         }
         if (!$this->error->has()) {
-            return $this->executeCommand(new PublishBatchCommand($batch->getId()));
+            $command = new PublishBatchCommand($batch->getId());
+            $this->executeCommand($command);
+            return new JsonResponse($batch);
         }
         $this->view();
     }
@@ -336,13 +338,11 @@ class Import extends DashboardPageController
             }
             $service = $this->app->make(BatchService::class);
             if ($batch->getBatchProcesses()->count()) {
-                $activeProcesses = $this->app->make(ElementManager::class)->get('process_list');
                 $processes = [];
                 foreach($batch->getBatchProcesses() as $batchProcess) {
                     $processes[] = $batchProcess->getProcess();
                 }
-                $activeProcesses->getElementController()->setProcesses($processes);
-                $this->set('activeProcesses', $activeProcesses);
+                $this->set('activeProcesses', $processes);
             }
             $this->set('settings', $settings);
             $this->render('/dashboard/system/migration/view_batch');

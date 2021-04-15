@@ -2,10 +2,15 @@
 
 namespace PortlandLabs\Concrete5\MigrationTool\Publisher\Command;
 
-use League\Tactician\Bernard\QueueableCommand;
+use PortlandLabs\Concrete5\MigrationTool\Publisher\Command\Handler\CreatePageStructureCommandHandler;
 
 class CreatePageStructureCommand extends AbstractPagePublisherCommand
 {
+
+    public static function getHandler(): string
+    {
+        return CreatePageStructureCommandHandler::class;
+    }
 
 
 }

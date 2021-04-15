@@ -3,11 +3,17 @@
 namespace PortlandLabs\Concrete5\MigrationTool\Publisher\Command;
 
 use League\Tactician\Bernard\QueueableCommand;
+use PortlandLabs\Concrete5\MigrationTool\Publisher\Command\Handler\AssociateExpressEntryCommandHandler;
 
 class AssociateExpressEntryCommand extends PublisherCommand
 {
 
     protected $entryId;
+
+    public static function getHandler(): string
+    {
+        return AssociateExpressEntryCommandHandler::class;
+    }
 
     public function __construct($batchId, $logId, $entryId)
     {

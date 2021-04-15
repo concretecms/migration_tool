@@ -3,9 +3,6 @@ namespace PortlandLabs\Concrete5\MigrationTool\Publisher\Command\Handler;
 
 
 use PortlandLabs\Concrete5\MigrationTool\Batch\BatchInterface;
-use PortlandLabs\Concrete5\MigrationTool\Publisher\Command\ClearBatchCommand;
-use PortlandLabs\Concrete5\MigrationTool\Publisher\Command\PublisherCommand;
-use PortlandLabs\Concrete5\MigrationTool\Publisher\Logger\Logger;
 use PortlandLabs\Concrete5\MigrationTool\Publisher\Logger\LoggerInterface;
 
 class ClearBatchCommandHandler extends AbstractHandler

@@ -2,10 +2,16 @@
 
 namespace PortlandLabs\Concrete5\MigrationTool\Publisher\Command;
 
-use League\Tactician\Bernard\QueueableCommand;
+use PortlandLabs\Concrete5\MigrationTool\Publisher\Command\Handler\CreateJobsCommandHandler;
 
 class CreateJobsCommand extends PublisherCommand
 {
+
+    public static function getHandler(): string
+    {
+        return CreateJobsCommandHandler::class;
+    }
+
 
 
 }

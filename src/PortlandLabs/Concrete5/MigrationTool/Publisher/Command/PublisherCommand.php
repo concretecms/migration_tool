@@ -2,7 +2,9 @@
 
 namespace PortlandLabs\Concrete5\MigrationTool\Publisher\Command;
 
-abstract class PublisherCommand
+use Concrete\Core\Foundation\Command\HandlerAwareCommandInterface;
+
+abstract class PublisherCommand implements HandlerAwareCommandInterface
 {
 
     protected $batchId;

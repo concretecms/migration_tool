@@ -217,7 +217,45 @@ $dh = Core::make('helper/date');
 
 <?php if ($activeProcesses) { ?>
 
-    <?=$activeProcesses->render();?>
+    <div v-cloak id="ccm-migration-process-list">
+
+        <div v-if="processes.length">
+            <p class="lead"><?=t('Active Processes')?></p>
+            <div v-if="processes.length">
+                <running-process-list :processes="processes" @complete-process="completeProcess"></running-process-list>
+            </div>
+        </div>
+    </div>
+
+
+    <script type="text/javascript">
+        $(function() {
+            Concrete.Vue.activateContext('backend', function (Vue, config) {
+                new Vue({
+                    el: '#ccm-migration-process-list',
+                    components: config.components,
+                    methods: {
+                        completeProcess(process) {
+                            var my = this
+                            this.processes.forEach(function(runningProcess, i) {
+                                if (runningProcess.id == process.id) {
+                                    my.processes.splice(i, 1)
+                                }
+                            })
+                            if (this.processes.length === 0) {
+                                window.location.reload()
+                            }
+                        }
+                    },
+                    data: {
+                        'processes': <?=json_encode($activeProcesses)?>,
+                    }
+                })
+            })
+        });
+    </script>
+
+
 
 <?php } else { ?>
     <?php Loader::element('batch', array('batch' => $batch), 'migration_tool'); ?>
@@ -250,24 +288,19 @@ $dh = Core::make('helper/date');
         });
 
         $('button[data-action=publish-content]').on('click', function (e) {
-            $('p[data-description=create-content]').hide();
-            $('div[data-progress-bar=create-content]').show();
-            $('div[data-progress-bar=create-content] h4').html('<?=t('Publishing Content...')?>');
 
-            new ConcreteProgressiveOperation({
+            jQuery.fn.dialog.showLoader();
+            var data = [];
+            data.push({'name': 'id', 'value': '<?=$batch->getID()?>'});
+            data.push({'name': 'ccm_token', 'value': '<?=Loader::helper('validation/token')->generate('create_content_from_batch')?>'});
+            $.concreteAjax({
+                data: data,
                 url: '<?=$view->action('create_content_from_batch')?>',
-                data: [
-                    {'name': 'id', 'value': '<?=$batch->getID()?>'},
-                    {
-                        'name': 'ccm_token',
-                        'value': '<?=Core::make('token')->generate('create_content_from_batch')?>'
-                    }
-                ],
-                onComplete: function() {
+                success: function() {
                     window.location.reload();
-                },
-                element: $('div[data-progress-bar-wrapper=create-content]')
+                }
             });
+
         });
 
         $('button[data-action=remove-selected-items]').on('click', function (e) {

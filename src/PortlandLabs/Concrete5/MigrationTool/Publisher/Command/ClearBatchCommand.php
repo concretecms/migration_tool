@@ -2,10 +2,14 @@
 
 namespace PortlandLabs\Concrete5\MigrationTool\Publisher\Command;
 
-use League\Tactician\Bernard\QueueableCommand;
+use PortlandLabs\Concrete5\MigrationTool\Publisher\Command\Handler\ClearBatchCommandHandler;
 
 class ClearBatchCommand extends PublisherCommand
 {
 
+    public static function getHandler(): string
+    {
+        return ClearBatchCommandHandler::class;
+    }
 
 }
