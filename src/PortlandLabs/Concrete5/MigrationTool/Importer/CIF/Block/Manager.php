@@ -48,6 +48,11 @@ class Manager extends CoreManager
         return new SocialLinksImporter();
     }
 
+    public function createShareThisPageDriver()
+    {
+        return new ShareThisPageImporter();
+    }
+
     public function createImageSliderDriver()
     {
         return new ImageSliderImporter();

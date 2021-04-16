@@ -193,7 +193,7 @@ class PageType implements PublishableInterface, LoggableInterface
     }
 
     /**
-     * @return mixed
+     * @return
      */
     public function getTemplates()
     {

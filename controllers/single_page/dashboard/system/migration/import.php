@@ -21,6 +21,7 @@ use PortlandLabs\Concrete5\MigrationTool\Batch\Formatter\TreeLazyLoadItemProvide
 use PortlandLabs\Concrete5\MigrationTool\Batch\Formatter\User\TreeUserJsonFormatter;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Queue\QueueFactory;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\BatchValidatorSubject;
+use PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\BatchTargetItem;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -547,8 +548,10 @@ class Import extends DashboardPageController
         session_write_close();
         $r = $this->entityManager->getRepository('\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page');
         $page = $r->findOneById($this->request->get('id'));
-        if (is_object($page)) {
-            $formatter = new TreePageJsonFormatter($page);
+        $r = $this->entityManager->getRepository(Batch::class);
+        $batch = $r->findOneById($this->request->get('batch_id'));
+        if ($page && $batch) {
+            $formatter = new TreePageJsonFormatter($batch, $page);
 
             return new JsonResponse($formatter);
         }

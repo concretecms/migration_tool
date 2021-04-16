@@ -20,7 +20,7 @@
             lazyLoad: function(event, data) {
                 data.result = {
                     url: '<?=$view->action('load_batch_page_data')?>',
-                    data: {'id': data.node.data.id}
+                    data: {'id': data.node.data.id, 'batch_id': '<?=$batch->getId()?>'}
                 }
             },
             renderInitialColumnData: function(cells, data) {
