@@ -8,7 +8,7 @@ use PortlandLabs\Concrete5\MigrationTool\Entity\ContentMapper\UnmappedTargetItem
 class TransformContentTypesCommandHandler
 {
 
-    public function handle(TransformContentTypesCommand $command)
+    public function __invoke(TransformContentTypesCommand $command)
     {
         $em = \Database::connection()->getEntityManager();
         $batch = $em->getRepository('PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch')->findOneById($command->getBatchId());

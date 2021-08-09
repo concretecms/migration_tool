@@ -4,10 +4,9 @@ $dh = Core::make('helper/date');
 ?>
     <div class="ccm-dashboard-header-buttons">
 
-        <?php if ($activeQueue) { ?>
+        <?php if ($activeProcesses) { ?>
             <div class="btn-group btn-group">
-                <button class="btn btn-light" onclick="launchActiveQueue()"><?=t('Resume Active Process')?></button>
-                <a href="javascript:void(0)" class="btn btn-danger" data-dialog="clear-batch-queues"
+                <a href="javascript:void(0)" class="btn btn-danger" data-dialog-width="500" data-dialog="reset-processes"
                    data-dialog-title="<?= t('Reset All Processes') ?>"><?= t("Reset All Processes") ?></a>
             </div>
 
@@ -63,17 +62,6 @@ $dh = Core::make('helper/date');
     </div>
 
     <div style="display: none">
-
-        <div data-progress-bar="rescan">
-            <div class="ccm-ui">
-                <h4 data-progress-bar-title="rescan"></h4>
-                <div data-progress-bar-wrapper="rescan">
-                    <div class="progress progress-bar-striped progress-striped active">
-                        <div class="progress-bar" style="width: 100%;"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <div data-dialog-wrapper="delete-batch"">
         <div id="ccm-dialog-delete-batch" class="ccm-ui">
@@ -141,17 +129,17 @@ $dh = Core::make('helper/date');
         </div>
         </div>
 
-        <div data-dialog-wrapper="clear-batch-queues">
-            <div id="ccm-dialog-clear-batch-queues" class="ccm-ui">
-                <form method="post" action="<?= $view->action('clear_batch_queues') ?>">
-                    <?= Loader::helper("validation/token")->output('clear_batch_queues') ?>
+        <div data-dialog-wrapper="reset-processes">
+            <div id="ccm-dialog-reset-processes" class="ccm-ui">
+                <form method="post" action="<?= $view->action('reset_processes') ?>">
+                    <?= Loader::helper("validation/token")->output('reset_processes') ?>
                     <input type="hidden" name="id" value="<?= $batch->getID() ?>">
                     <p><?= t('Are you sure you reset all running processes for this batch? If someone else is actively importing content into the site it could affect them.') ?></p>
                     <div class="dialog-buttons">
                         <button class="btn btn-light float-start"
                                 onclick="jQuery.fn.dialog.closeTop()"><?= t('Cancel') ?></button>
-                        <button class="btn btn-danger float-right"
-                                onclick="$('#ccm-dialog-clear-batch-queues form').submit()"><?= t('Reset Processes') ?></button>
+                        <button class="btn btn-danger"
+                                onclick="$('#ccm-dialog-reset-processes form').submit()"><?= t('Reset Processes') ?></button>
                     </div>
                 </form>
             </div>
@@ -163,14 +151,6 @@ $dh = Core::make('helper/date');
         <div id="ccm-dialog-create-content" class="ccm-ui">
             <form method="post">
                 <p data-description="create-content"><?= t('Create site content from the contents of this batch?') ?></p>
-                <div data-progress-bar="create-content" style="display: none">
-                    <h4 data-progress-bar-title="create-content"></h4>
-                    <div data-progress-bar-wrapper="create-content">
-                        <div class="progress progress-striped active">
-                            <div class="progress-bar" style="width: 0%;"></div>
-                        </div>
-                    </div>
-                </div>
 
                 <div class="dialog-buttons">
                     <button class="btn btn-light float-start"
@@ -207,14 +187,6 @@ $dh = Core::make('helper/date');
                         </label>
                     </div>
                 </div>
-                <div data-progress-bar="add-to-batch" style="display: none">
-                    <h4 data-progress-bar-title="add-to-batch"></h4>
-                    <div data-progress-bar-wrapper="add-to-batch">
-                        <div class="progress progress-striped active">
-                            <div class="progress-bar" style="width: 100%;"></div>
-                        </div>
-                    </div>
-                </div>
             </form>
             <div class="dialog-buttons">
                 <button class="btn btn-secondary float-start"
@@ -243,109 +215,92 @@ $dh = Core::make('helper/date');
         <p><?= $site->getSiteName() ?></p>
     <?php } ?>
 
-<?php if ($activeQueue) { ?>
-    <?php Loader::element('active_queue', array('batch' => $batch, 'queue' => $activeQueue), 'migration_tool'); ?>
+<?php if ($activeProcesses) { ?>
+
+    <div v-cloak id="ccm-migration-process-list">
+
+        <div v-if="processes.length">
+            <p class="lead"><?=t('Active Processes')?></p>
+            <div v-if="processes.length">
+                <running-process-list :processes="processes" @complete-process="completeProcess"></running-process-list>
+            </div>
+        </div>
+    </div>
+
+
+    <script type="text/javascript">
+        $(function() {
+            Concrete.Vue.activateContext('backend', function (Vue, config) {
+                new Vue({
+                    el: '#ccm-migration-process-list',
+                    components: config.components,
+                    methods: {
+                        completeProcess(process) {
+                            var my = this
+                            this.processes.forEach(function(runningProcess, i) {
+                                if (runningProcess.id == process.id) {
+                                    my.processes.splice(i, 1)
+                                }
+                            })
+                            if (this.processes.length === 0) {
+                                window.location.reload()
+                            }
+                        }
+                    },
+                    data: {
+                        'processes': <?=json_encode($activeProcesses)?>,
+                    }
+                })
+            })
+        });
+    </script>
+
+
 
 <?php } else { ?>
     <?php Loader::element('batch', array('batch' => $batch), 'migration_tool'); ?>
 <?php } ?>
 
 <script type="text/javascript">
-    showRescanDialog = function () {
-        $('[data-progress-bar=rescan]').jqdialog({
-            autoOpen: true,
-            height: 'auto',
-            width: 400,
-            modal: true,
-            dialogClass: 'ccm-ui',
-            title: '<?=t("Scanning Batch")?>',
-            closeOnEscape: false,
-            open: function (e, ui) {
 
-            }
-        });
-    }
+    rescanBatchItems = function () {
 
-    rescanBatchItems = function ($element) {
-
-        $('h4[data-progress-bar-title]').html('<?=t('Normalizing Page Paths...')?>');
-
-
+        jQuery.fn.dialog.showLoader();
+        var data = [];
+        data.push({'name': 'id', 'value': '<?=$batch->getID()?>'});
+        data.push({'name': 'ccm_token', 'value': '<?=Loader::helper('validation/token')->generate('rescan_batch_items')?>'});
         $.concreteAjax({
-            loader: false,
-            url: '<?=$view->action('run_batch_content_normalize_page_paths_task')?>',
-            type: 'POST',
-            data: [
-                {'name': 'id', 'value': '<?=$batch->getID()?>'},
-                {
-                    'name': 'ccm_token',
-                    'value': '<?=Core::make('token')->generate('run_batch_content_normalize_page_paths_task')?>'
-                }
-            ],
-            success: function (r) {
-                $('h4[data-progress-bar-title]').html('<?=t('Mapping Content Types...')?>');
-                new ConcreteProgressiveOperation({
-                    url: '<?=$view->action('run_batch_content_map_content_types_task')?>',
-                    title: <?=json_encode(t('Mapping Content Items'))?>,
-                    data: [
-                        {'name': 'id', 'value': '<?=$batch->getID()?>'},
-                        {
-                            'name': 'ccm_token',
-                            'value': '<?=Core::make('token')->generate('run_batch_content_map_content_types_task')?>'
-                        }
-                    ],
-                    element: $element,
-                    onComplete: function() {
-                        $('h4[data-progress-bar-title]').html('<?=t('Transforming Content Types...')?>');
-                        new ConcreteProgressiveOperation({
-                            url: '<?=$view->action('run_batch_content_transform_content_types_task')?>',
-                            title: <?=json_encode(t('Transforming Content Items'))?>,
-                            data: [
-                                {'name': 'id', 'value': '<?=$batch->getID()?>'},
-                                {
-                                    'name': 'ccm_token',
-                                    'value': '<?=Core::make('token')->generate('run_batch_content_transform_content_types_task')?>'
-                                }
-                            ],
-                            onComplete: function() {
-                                window.location.reload();
-                            },
-                            element: $element
-                        });
-
-                    }
-                });
+            data: data,
+            url: '<?=$view->action('rescan_batch_items')?>',
+            success: function() {
+                window.location.reload();
             }
         });
+
+
     }
 
     $(function () {
 
         $('a[data-action=rescan-batch]').on('click', function (e) {
             e.preventDefault();
-            showRescanDialog();
-            rescanBatchItems($('div[data-progress-bar-wrapper=rescan]'));
+            rescanBatchItems();
         });
 
         $('button[data-action=publish-content]').on('click', function (e) {
-            $('p[data-description=create-content]').hide();
-            $('div[data-progress-bar=create-content]').show();
-            $('div[data-progress-bar=create-content] h4').html('<?=t('Publishing Content...')?>');
 
-            new ConcreteProgressiveOperation({
+            jQuery.fn.dialog.showLoader();
+            var data = [];
+            data.push({'name': 'id', 'value': '<?=$batch->getID()?>'});
+            data.push({'name': 'ccm_token', 'value': '<?=Loader::helper('validation/token')->generate('create_content_from_batch')?>'});
+            $.concreteAjax({
+                data: data,
                 url: '<?=$view->action('create_content_from_batch')?>',
-                data: [
-                    {'name': 'id', 'value': '<?=$batch->getID()?>'},
-                    {
-                        'name': 'ccm_token',
-                        'value': '<?=Core::make('token')->generate('create_content_from_batch')?>'
-                    }
-                ],
-                onComplete: function() {
+                success: function() {
                     window.location.reload();
-                },
-                element: $('div[data-progress-bar-wrapper=create-content]')
+                }
             });
+
         });
 
         $('button[data-action=remove-selected-items]').on('click', function (e) {
@@ -375,8 +330,7 @@ $dh = Core::make('helper/date');
                     // Nothing - we don't want the loader
                 },
                 success: function (r) {
-                    submitSuccess = true;
-                    rescanBatchItems($('div[data-progress-bar-wrapper=add-to-batch]'));
+                    window.location.reload();
                 },
                 complete: function () {
                     if (!submitSuccess) {

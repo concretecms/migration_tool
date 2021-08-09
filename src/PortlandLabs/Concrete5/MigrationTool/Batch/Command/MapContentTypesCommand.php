@@ -2,10 +2,9 @@
 
 namespace PortlandLabs\Concrete5\MigrationTool\Batch\Command;
 
-use Concrete\Core\Foundation\Queue\Batch\Command\BatchableCommandInterface;
-use League\Tactician\Bernard\QueueableCommand;
+use Concrete\Core\Foundation\Command\Command;
 
-class MapContentTypesCommand implements BatchableCommandInterface
+class MapContentTypesCommand extends Command
 {
 
     protected $batchId;

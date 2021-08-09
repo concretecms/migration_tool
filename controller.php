@@ -1,12 +1,17 @@
 <?php
 namespace Concrete\Package\MigrationTool;
 
+use Concrete\Core\Application\Application;
 use Concrete\Core\Asset\AssetList;
-use Concrete\Core\Foundation\Command\Dispatcher;
+use Concrete\Core\Command\Process\Command\HandleProcessMessageCommandHandler;
+use Concrete\Core\Console\Command;
+use Concrete\Core\Messenger\MessageBusManager;
+use Concrete\Core\Messenger\Registry\CommandBus;
+use Concrete\Core\Messenger\Registry\SynchronousCommandBus;
 use Concrete\Core\Package\Package;
 use Concrete\Core\Page\Type\Type;
-use League\Tactician\Bernard\Receiver\SeparateBusReceiver;
 use Page;
+use PortlandLabs\Concrete5\MigrationTool\Batch\Command\PublishBatchCommandHandler;
 use PortlandLabs\Concrete5\MigrationTool\Batch\ContentMapper\Manager;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\BatchValidator;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Pipeline\Stage\ValidateAreasStage;
@@ -34,23 +39,22 @@ use PortlandLabs\Concrete5\MigrationTool\Importer\CIF\Express\Control\Manager as
 use PortlandLabs\Concrete5\MigrationTool\Importer\CIF\Manager as CIFImportManager;
 use PortlandLabs\Concrete5\MigrationTool\Importer\CIF\PageType\PublishTarget\Manager as PublishTargetManager;
 use PortlandLabs\Concrete5\MigrationTool\Importer\CIF\Permission\AccessEntity\Manager as AccessEntityManager;
-use PortlandLabs\Concrete5\MigrationTool\Importer\CommandRegistrar;
 use PortlandLabs\Concrete5\MigrationTool\Importer\ParserManager;
 use PortlandLabs\Concrete5\MigrationTool\Importer\Wordpress\Block\Manager as WordpressBlockManager;
 use PortlandLabs\Concrete5\MigrationTool\Importer\Wordpress\Manager as WordpressImportManager;
+use PortlandLabs\Concrete5\MigrationTool\Messenger\Middleware\PublisherExceptionHandlingMiddleware;
 use PortlandLabs\Concrete5\MigrationTool\Publisher\Block\Manager as BlockPublisherManager;
-use PortlandLabs\Concrete5\MigrationTool\Publisher\Command\Middleware\PublisherExceptionHandlingMiddleware;
-use PortlandLabs\Concrete5\MigrationTool\Publisher\Command\PublishCommandBus;
 use PortlandLabs\Concrete5\MigrationTool\Publisher\Command\PublisherCommand;
 use PortlandLabs\Concrete5\MigrationTool\Publisher\ContentImporter\ValueInspector\InspectionRoutine\BatchPageRoutine;
 use PortlandLabs\Concrete5\MigrationTool\Publisher\Routine\Manager as PublisherManager;
 use SinglePage;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 class Controller extends Package
 {
     protected $pkgHandle = 'migration_tool';
     protected $appVersionRequired = '9.0.0a1';
-    protected $pkgVersion = '9.0.0a1';
+    protected $pkgVersion = '9.0.0a2';
     protected $pkgAutoloaderMapCoreExtensions = true;
     protected $pkgAutoloaderRegistries = array(
         'src/PortlandLabs/Concrete5/MigrationTool' => '\PortlandLabs\Concrete5\MigrationTool',
@@ -242,10 +246,6 @@ class Controller extends Package
             return new ExporterItemTypeManager($app);
         });
 
-        // Add a custom bus to handle our publish commands
-        $dispatcher = $this->app->getCommandDispatcher();
-        $dispatcher->addBus(new PublishCommandBus($this->app));
-
         $al = AssetList::getInstance();
         $al->register('javascript', 'migration_tool/backend', 'assets/js/backend.js', [], $this);
         $al->register('css', 'migration_tool/backend', 'assets/css/backend.css', [], $this);
@@ -254,13 +254,12 @@ class Controller extends Package
             ['css', 'migration_tool/backend'],
         ));
 
-        // Commands
-        $registrar = new CommandRegistrar($this->app);
-        $registrar->register();
-
-        $subscriber = new EventSubscriber($this->app);
+        $subscriber = $this->app->make(EventSubscriber::class);
         $dispatcher = $this->app->make('director');
         $dispatcher->addSubscriber($subscriber);
+
+        $this->app->make(MessageBusManager::class)
+            ->addMiddleware(PublisherExceptionHandlingMiddleware::class);
     }
     
 

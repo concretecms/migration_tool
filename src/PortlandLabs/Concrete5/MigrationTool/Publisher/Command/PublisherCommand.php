@@ -2,10 +2,9 @@
 
 namespace PortlandLabs\Concrete5\MigrationTool\Publisher\Command;
 
-use Concrete\Core\Foundation\Queue\Batch\Command\BatchableCommandInterface;
-use League\Tactician\Bernard\QueueableCommand;
+use Concrete\Core\Foundation\Command\HandlerAwareCommandInterface;
 
-abstract class PublisherCommand implements BatchableCommandInterface, QueueableCommand
+abstract class PublisherCommand implements HandlerAwareCommandInterface
 {
 
     protected $batchId;

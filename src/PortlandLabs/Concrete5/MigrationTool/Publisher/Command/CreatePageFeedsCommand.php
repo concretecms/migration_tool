@@ -2,10 +2,14 @@
 
 namespace PortlandLabs\Concrete5\MigrationTool\Publisher\Command;
 
-use League\Tactician\Bernard\QueueableCommand;
+use PortlandLabs\Concrete5\MigrationTool\Publisher\Command\Handler\CreatePageFeedsCommandHandler;
 
 class CreatePageFeedsCommand extends PublisherCommand
 {
 
+    public static function getHandler(): string
+    {
+        return CreatePageFeedsCommandHandler::class;
+    }
 
 }

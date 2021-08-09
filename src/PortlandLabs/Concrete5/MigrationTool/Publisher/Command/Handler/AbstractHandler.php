@@ -49,7 +49,7 @@ abstract class AbstractHandler
         $this->app = $app;
     }
 
-    public function handle(PublisherCommand $command)
+    public function __invoke(PublisherCommand $command)
     {
         $batch = $this->getBatch($command);
         $logger = $this->getLogger($command);

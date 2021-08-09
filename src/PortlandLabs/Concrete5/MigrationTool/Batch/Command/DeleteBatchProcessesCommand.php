@@ -2,10 +2,9 @@
 
 namespace PortlandLabs\Concrete5\MigrationTool\Batch\Command;
 
-
 use Concrete\Core\Foundation\Command\Command;
 
-class NormalizePagePathsCommand extends Command
+class DeleteBatchProcessesCommand extends Command
 {
 
     protected $batchId;
@@ -21,14 +20,6 @@ class NormalizePagePathsCommand extends Command
     public function getBatchId()
     {
         return $this->batchId;
-    }
-
-    /**
-     * @param mixed $batchId
-     */
-    public function setBatchId($batchId)
-    {
-        $this->batchId = $batchId;
     }
 
 
