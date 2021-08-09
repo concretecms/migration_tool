@@ -21,7 +21,7 @@ $dh = Core::make('helper/date');
             <input type="hidden" name="id" value="<?= $batch->getID() ?>">
             <p><?= t('Are you sure you remove all the files from this batch? They will be deleted from the entire concrete5 site. This cannot be undone.') ?></p>
             <div class="dialog-buttons">
-                <button class="btn btn-secondary float-left"
+                <button class="btn btn-secondary float-start"
                         onclick="jQuery.fn.dialog.closeTop()"><?= t('Cancel') ?></button>
                 <button class="btn btn-danger float-right"
                         onclick="$('#ccm-dialog-delete-files form').submit()"><?= t('Clear Batch') ?></button>
