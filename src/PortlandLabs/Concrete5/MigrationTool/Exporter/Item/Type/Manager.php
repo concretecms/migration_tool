@@ -42,6 +42,11 @@ class Manager extends CoreManager
         return new Container();
     }
 
+    protected function createSocialLinkDriver()
+    {
+        return new SocialLink();
+    }
+
     protected function createSummaryCategoryDriver()
     {
         return new SummaryCategory();
@@ -173,9 +178,9 @@ class Manager extends CoreManager
         $this->driver('permission_access_entity_type');
         $this->driver('permission_key');
         $this->driver('workflow_type');
-        $this->driver('social_link');
         $this->driver('thumbnail_type');
         */
+        $this->driver('social_link');
         $this->driver('tree');
         $this->driver('captcha');
         $this->driver('attribute_key');

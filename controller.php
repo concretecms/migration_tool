@@ -53,8 +53,8 @@ use Symfony\Component\Messenger\MessageBusInterface;
 class Controller extends Package
 {
     protected $pkgHandle = 'migration_tool';
-    protected $appVersionRequired = '9.0.0a1';
-    protected $pkgVersion = '9.0.0a2';
+    protected $appVersionRequired = '9.0.0RC2';
+    protected $pkgVersion = '9.0.0RC2';
     protected $pkgAutoloaderMapCoreExtensions = true;
     protected $pkgAutoloaderRegistries = array(
         'src/PortlandLabs/Concrete5/MigrationTool' => '\PortlandLabs\Concrete5\MigrationTool',
