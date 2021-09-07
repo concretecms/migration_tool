@@ -67,8 +67,8 @@
 <h3><?=t('Content XML')?></h3>
 <form method="post" action="<?=$view->action('export_batch_xml', $batch->getID())?>">
     <div class="btn-group">
-        <button type="submit" name="view" value="1" class="btn btn-default"><?=t('View XML')?></button>
-        <button type="submit" name="download" value="1" class="btn btn-default"><?=t('Download XML')?></button>
+        <button type="submit" name="view" value="1" class="btn btn-secondary"><?=t('View XML')?></button>
+        <button type="submit" name="download" value="1" class="btn btn-secondary"><?=t('Download XML')?></button>
     </div>
 </form>
 
