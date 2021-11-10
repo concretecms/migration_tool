@@ -4,9 +4,9 @@ $dh = Core::make('helper/date');
 ?>
 <div class="ccm-dashboard-header-buttons">
 <div class="btn-group" role="group">
-    <a href="<?=$view->action('add_to_batch', $batch->getId())?>" class="btn btn-default"><?=t("Add Content to Batch")?></a>
-    <button data-action="remove-from-batch" disabled class="btn btn-default"><?=t('Remove Selected')?></button>
-    <a href="<?=$view->action('export_batch', $batch->getId())?>" class="btn btn-primary"><?=t("Export Batch")?></a>
+    <a href="<?=$view->action('add_to_batch', $batch->getId())?>" class="btn btn-secondary"><?=t("Add Content to Batch")?></a>
+    <button data-action="remove-from-batch" disabled class="btn btn-secondary"><?=t('Remove Selected')?></button>
+    <a href="<?=$view->action('export_batch', $batch->getId())?>" class="btn btn-secondary"><?=t("Export Batch")?></a>
     <a href="javascript:void(0)" data-dialog="delete-batch" data-dialog-title="<?=t('Delete Batch')?>" class="btn btn-danger"><?=t("Delete Batch")?></a>
 </div>
 </div>

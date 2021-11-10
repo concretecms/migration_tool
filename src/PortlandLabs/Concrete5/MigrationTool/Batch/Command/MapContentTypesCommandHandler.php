@@ -8,7 +8,7 @@ use PortlandLabs\Concrete5\MigrationTool\Batch\ContentMapper\PresetManager;
 class MapContentTypesCommandHandler
 {
 
-    public function handle(MapContentTypesCommand $command)
+    public function __invoke(MapContentTypesCommand $command)
     {
         // Since batch is serialized we do this:
         $em = \Database::connection()->getEntityManager();

@@ -8,7 +8,7 @@ use PortlandLabs\Concrete5\MigrationTool\Batch\ContentMapper\PresetManager;
 class NormalizePagePathsCommandHandler
 {
 
-    public function handle(NormalizePagePathsCommand $command)
+    public function __invoke(NormalizePagePathsCommand $command)
     {
         // Since batch is serialized we do this:
         $em = \Database::connection()->getEntityManager();

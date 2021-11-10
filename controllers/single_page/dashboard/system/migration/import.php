@@ -4,14 +4,18 @@ namespace Concrete\Package\MigrationTool\Controller\SinglePage\Dashboard\System\
 use Concrete\Core\File\Filesystem;
 use Concrete\Core\File\Importer;
 use Concrete\Core\File\Set\Set;
-use Concrete\Core\Foundation\Queue\Batch\Processor;
+use Concrete\Core\Command\Batch\Batch as BatchBuilder;
+use Concrete\Core\Filesystem\ElementManager;
 use Concrete\Core\Page\PageList;
 use Concrete\Package\MigrationTool\Page\Controller\DashboardPageController;
 use Doctrine\Common\Collections\ArrayCollection;
 use PortlandLabs\Concrete5\MigrationTool\Batch\BatchService;
+use PortlandLabs\Concrete5\MigrationTool\Batch\Command\DeleteBatchProcessesCommand;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Command\MapContentTypesBatchProcessFactory;
+use PortlandLabs\Concrete5\MigrationTool\Batch\Command\MapContentTypesCommand;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Command\NormalizePagePathsCommand;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Command\PublishBatchCommand;
+use PortlandLabs\Concrete5\MigrationTool\Batch\Command\ScanContentTypesCommand;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Command\TransformContentTypesBatchProcessFactory;
 use PortlandLabs\Concrete5\MigrationTool\Batch\ContentMapper\PresetManager;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Formatter\ExpressEntry\TreeEntryJsonFormatter;
@@ -19,7 +23,6 @@ use PortlandLabs\Concrete5\MigrationTool\Batch\Formatter\Page\TreePageJsonFormat
 use PortlandLabs\Concrete5\MigrationTool\Batch\Formatter\Site\TreeSiteJsonFormatter;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Formatter\TreeLazyLoadItemProviderInterface;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Formatter\User\TreeUserJsonFormatter;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Queue\QueueFactory;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\BatchValidatorSubject;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\BatchTargetItem;
@@ -114,17 +117,18 @@ class Import extends DashboardPageController
         $this->view();
     }
 
-    public function clear_batch_queues()
+    public function reset_processes()
     {
-        if (!$this->token->validate('clear_batch_queues')) {
+        if (!$this->token->validate('reset_processes')) {
             $this->error->add($this->token->getErrorMessage());
         }
         if (!$this->error->has()) {
             $r = $this->entityManager->getRepository('\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch');
             $batch = $r->findOneById($this->request->request->get('id'));
             if (is_object($batch)) {
-                $service = $this->app->make(BatchService::class);
-                $service->clearQueues($batch);
+                $command = new DeleteBatchProcessesCommand($batch->getId());
+                $this->executeCommand($command);
+
                 $this->flash('success', t('Batch processes reset successfully.'));
                 $this->redirect('/dashboard/system/migration/import', 'view_batch', $batch->getId());
             }
@@ -242,6 +246,10 @@ class Import extends DashboardPageController
 
             $importer->addContentObjectCollectionsToBatch($_FILES['file']['tmp_name'], $batch);
 
+            $this->executeCommand(new ScanContentTypesCommand($batch->getId()));
+
+            $this->flash('success', t('Content added. Rescanning in progress...'));
+
             $this->entityManager->flush();
 
             return new JsonResponse($batch);
@@ -251,9 +259,9 @@ class Import extends DashboardPageController
         $this->app->shutdown();
     }
 
-    public function run_batch_content_normalize_page_paths_task()
+    public function rescan_batch_items()
     {
-        if (!$this->token->validate('run_batch_content_normalize_page_paths_task')) {
+        if (!$this->token->validate('rescan_batch_items')) {
             $this->error->add($this->token->getErrorMessage());
         }
         $r = $this->entityManager->getRepository('\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch');
@@ -262,46 +270,9 @@ class Import extends DashboardPageController
             $this->error->add(t('Invalid batch.'));
         }
         if (!$this->error->has()) {
-
-            $command = new NormalizePagePathsCommand($batch->getId());
+            $command = new ScanContentTypesCommand($batch->getId());
             $this->executeCommand($command);
             return new JsonResponse($batch);
-        }
-        $this->view();
-    }
-
-    public function run_batch_content_map_content_types_task()
-    {
-        if (!$this->token->validate('run_batch_content_map_content_types_task')) {
-            $this->error->add($this->token->getErrorMessage());
-        }
-        $r = $this->entityManager->getRepository('\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch');
-        $batch = $r->findOneById($this->request->request->get('id'));
-        if (!is_object($batch)) {
-            $this->error->add(t('Invalid batch.'));
-        }
-        if (!$this->error->has()) {
-            $factory = new MapContentTypesBatchProcessFactory($this->app);
-            $processor = $this->app->make(Processor::class);
-            return $processor->process($factory, $batch);
-        }
-        $this->view();
-    }
-
-    public function run_batch_content_transform_content_types_task()
-    {
-        if (!$this->token->validate('run_batch_content_transform_content_types_task')) {
-            $this->error->add($this->token->getErrorMessage());
-        }
-        $r = $this->entityManager->getRepository('\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch');
-        $batch = $r->findOneById($this->request->request->get('id'));
-        if (!is_object($batch)) {
-            $this->error->add(t('Invalid batch.'));
-        }
-        if (!$this->error->has()) {
-            $factory = new TransformContentTypesBatchProcessFactory($this->app);
-            $processor = $this->app->make(Processor::class);
-            return $processor->process($factory, $batch);
         }
         $this->view();
     }
@@ -317,7 +288,9 @@ class Import extends DashboardPageController
             $this->error->add(t('Invalid batch.'));
         }
         if (!$this->error->has()) {
-            return $this->executeCommand(new PublishBatchCommand($batch->getId()));
+            $command = new PublishBatchCommand($batch->getId());
+            $this->executeCommand($command);
+            return new JsonResponse($batch);
         }
         $this->view();
     }
@@ -365,9 +338,14 @@ class Import extends DashboardPageController
                 }
             }
             $service = $this->app->make(BatchService::class);
-            $factory = $this->app->make(QueueFactory::class);
+            if ($batch->getBatchProcesses()->count()) {
+                $processes = [];
+                foreach($batch->getBatchProcesses() as $batchProcess) {
+                    $processes[] = $batchProcess->getProcess();
+                }
+                $this->set('activeProcesses', $processes);
+            }
             $this->set('settings', $settings);
-            $this->set('activeQueue', $factory->getActiveQueue($batch));
             $this->render('/dashboard/system/migration/view_batch');
         } else {
             $this->view();

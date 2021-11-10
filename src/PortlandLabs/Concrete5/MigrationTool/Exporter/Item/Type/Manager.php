@@ -42,6 +42,11 @@ class Manager extends CoreManager
         return new Container();
     }
 
+    protected function createSocialLinkDriver()
+    {
+        return new SocialLink();
+    }
+
     protected function createSummaryCategoryDriver()
     {
         return new SummaryCategory();
@@ -147,15 +152,32 @@ class Manager extends CoreManager
         return $this->app->make(Site::class);
     }
 
+    public function createBoardDriver()
+    {
+        return $this->app->make(Board::class);
+    }
+
     public function createSiteTypeDriver()
     {
         return $this->app->make(SiteType::class);
+    }
+
+    public function createBoardTemplateDriver()
+    {
+        return $this->app->make(BoardTemplate::class);
+    }
+
+    public function createThumbnailTypeDriver()
+    {
+        return $this->app->make(ThumbnailType::class);
     }
 
     public function __construct($app)
     {
         parent::__construct($app);
         $this->driver('group');
+        $this->driver('board');
+        $this->driver('board_template');
         $this->driver('express_entity');
         $this->driver('express_entry');
         $this->driver('attribute_key_category');
@@ -168,14 +190,8 @@ class Manager extends CoreManager
         $this->driver('block_type_set');
         $this->driver('attribute_set');
         $this->driver('user');
-        /*
-        $this->driver('package');
-        $this->driver('permission_access_entity_type');
-        $this->driver('permission_key');
-        $this->driver('workflow_type');
-        $this->driver('social_link');
         $this->driver('thumbnail_type');
-        */
+        $this->driver('social_link');
         $this->driver('tree');
         $this->driver('captcha');
         $this->driver('attribute_key');

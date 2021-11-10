@@ -55,12 +55,15 @@ class Stack extends AbstractType
                 break;
         }
 
-        $path = substr($c->getCollectionPath(), strlen(STACKS_PAGE_PATH));
+        if ($c) {
+            $path = substr($c->getCollectionPath(), strlen(STACKS_PAGE_PATH));
+            $name = $c->getCollectionName();
+        }
 
         return array(
             $type,
             $path,
-            $c->getCollectionName(),
+            $name,
         );
     }
 

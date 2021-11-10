@@ -1,28 +1,26 @@
 <?php defined('C5_EXECUTE') or die("Access Denied."); ?>
 
     <div class="ccm-dashboard-header-buttons">
-        <a href="<?=$view->action('view_batch', $batch->getID())?>" class="btn btn-default"><i class="fa fa-angle-double-left"></i> <?=t('Back to Batch')?></a>
+        <a href="<?=$view->action('view_batch', $batch->getID())?>" class="btn btn-secondary"><i class="fa fa-angle-double-left"></i> <?=t('Back to Batch')?></a>
     </div>
 
 
-    <form method="get" action="<?=$view->action('add_to_batch', $batch->getID())?>">
-    <div class="form-group">
-        <?=$form->label('item_type', t('Choose Item Type'))?>
-        <div style="padding-right: 80px; position: relative"">
-        <select name="item_type" class="form-control">
+<form method="get" action="<?=$view->action('add_to_batch', $batch->getID())?>">
+    <?=$form->label('item_type', t('Choose Item Type'))?>
+    <div class="hstack gap-3 col-6">
+        <select name="item_type" class="form-select">
             <option value=""><?=t('** Select Item')?></option>
             <?php foreach ($drivers as $itemType) {
     ?>
                 <option value="<?=$itemType->getHandle()?>"
                     <?php if (isset($selectedItemType) && $selectedItemType->getHandle() == $itemType->getHandle()) {
-    ?>selected<?php 
-}
+    ?>selected<?php
+    }
     ?>><?=$itemType->getPluralDisplayName()?></option>
-            <?php 
-} ?>
+            <?php
+    } ?>
         </select>
-        <button type="submit" style="position: absolute; top: 0px; right: 0px"name="submit" class="btn btn-primary"><?=t('Go')?></button>
-        </div>
+        <button type="submit" class="btn btn-primary"><?=t('Go')?></button>
     </div>
 </form>
 
@@ -30,6 +28,7 @@
 <?php if (isset($selectedItemType)) {
     ?>
 
+    <hr>
 
     <?php $formatter = $selectedItemType->getResultsFormatter($batch);
     ?>
@@ -44,7 +43,7 @@
             <?=$formatter->displaySearchForm();
     ?>
             <div class="form-actions">
-                <button type="submit" name="submit" class="btn pull-right btn-default"><?=t('Search')?></button>
+                <button type="submit" name="submit" class="btn float-end btn-secondary"><?=t('Search')?></button>
             </div>
         </form>
     <?php 
@@ -65,7 +64,7 @@
 
 
         <div class="clearfix">
-            <button disabled class="pull-right btn-default btn btn-sm" data-action="add-to-batch" type="button"><?=t('Add to Batch')?></button>
+            <button disabled class="float-end btn-secondary btn btn-sm" data-action="add-to-batch" type="button"><?=t('Add to Batch')?></button>
             <h4><?=t('Results')?></h4>
         </div>
 

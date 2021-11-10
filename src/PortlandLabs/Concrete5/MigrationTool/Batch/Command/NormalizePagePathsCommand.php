@@ -2,9 +2,10 @@
 
 namespace PortlandLabs\Concrete5\MigrationTool\Batch\Command;
 
-use Concrete\Core\Foundation\Command\CommandInterface;
 
-class NormalizePagePathsCommand implements CommandInterface
+use Concrete\Core\Foundation\Command\Command;
+
+class NormalizePagePathsCommand extends Command
 {
 
     protected $batchId;
