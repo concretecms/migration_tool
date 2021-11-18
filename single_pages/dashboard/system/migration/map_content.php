@@ -50,7 +50,7 @@ foreach ($mappers->getDrivers() as $mapper) {
                     <tr>
                         <td style="white-space: nowrap; vertical-align: middle"><?= $item->getDisplayName() ?></td>
                         <td>
-                            <select data-live-search="true" name="targetItem[<?=$mapper->getHandle()?>][<?= $item->getIdentifier() ?>]" data-selector="target-item">
+                            <select class="form-select form-select-sm" data-live-search="true" name="targetItem[<?=$mapper->getHandle()?>][<?= $item->getIdentifier() ?>]" data-selector="target-item">
                                 <optgroup label="<?=t('Unknown')?>">
                                     <?php foreach ($targetItemList->getInternalTargetItems() as $targetItem) {
                                         ?>
@@ -152,12 +152,12 @@ foreach ($mappers->getDrivers() as $mapper) {
 
 <script type="text/javascript">
     $(function() {
-        $('select[data-selector=target-item]').selectpicker();
+        //$('select[data-selector=target-item]').selectpicker();
         $('button[data-action=set-unmapped-to-ignored]').on('click', function() {
             $(this).parent().find('select').each(function() {
                 if ($(this).val() == '0') {
                     $(this).val('-1')
-                    $(this).selectpicker('refresh')
+                    //$(this).selectpicker('refresh')
                 }
             });
         });

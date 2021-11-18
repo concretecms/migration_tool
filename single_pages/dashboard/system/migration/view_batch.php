@@ -16,7 +16,7 @@ $dh = Core::make('helper/date');
                    class="btn btn-light"><?= t("Add Content to Batch") ?></a>
                 <a href="<?= $view->action('batch_files', $batch->getID()) ?>" class="btn btn-light"><?= t('Files') ?></a>
                 <div class="btn-group btn-group-sm" role="group">
-                    <button type="button" class="btn btn-light dropdown-toggle" data-toggle="dropdown"
+                    <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown"
                             aria-haspopup="true" aria-expanded="false">
                         <?= t('Edit') ?>
                         <span class="caret"></span>
@@ -37,7 +37,7 @@ $dh = Core::make('helper/date');
                     </div>
                 </div>
                 <div class="btn-group btn-group-sm" role="group">
-                    <button type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown"
+                    <button type="button" class="btn btn-danger dropdown-toggle" data-bs-toggle="dropdown"
                             aria-haspopup="true" aria-expanded="false">
                         <?= t('Delete') ?>
                         <span class="caret"></span>
