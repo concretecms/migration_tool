@@ -40,6 +40,8 @@ use PortlandLabs\Concrete5\MigrationTool\Importer\CIF\Element\ThumbnailType;
 use PortlandLabs\Concrete5\MigrationTool\Importer\CIF\Element\Tree;
 use PortlandLabs\Concrete5\MigrationTool\Importer\CIF\Element\WorkflowProgressCategory;
 use PortlandLabs\Concrete5\MigrationTool\Importer\CIF\Element\WorkflowType;
+use PortlandLabs\Concrete5\MigrationTool\Importer\CIF\Element\TreeType;
+use PortlandLabs\Concrete5\MigrationTool\Importer\CIF\Element\TreeNodeType;
 
 class Manager
 {
@@ -51,6 +53,8 @@ class Manager
     {
         $this->registerRoutine(new Group());
         $this->registerRoutine(new ThumbnailType());
+        $this->registerRoutine(new TreeType());
+        $this->registerRoutine(new TreeNodeType());
         $this->registerRoutine(new BannedWord());
         $this->registerRoutine(new ExpressEntity());
         $this->registerRoutine(new SocialLink());

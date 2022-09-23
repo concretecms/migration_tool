@@ -172,11 +172,23 @@ class Manager extends CoreManager
         return $this->app->make(ThumbnailType::class);
     }
 
+    public function createTreeTypeDriver()
+    {
+        return $this->app->make(TreeType::class);
+    }
+
+    public function createTreeNodeTypeDriver()
+    {
+        return $this->app->make(TreeNodeType::class);
+    }
+
     public function __construct($app)
     {
         parent::__construct($app);
         $this->driver('group');
         $this->driver('board');
+        $this->driver('tree_type');
+        $this->driver('tree_node_type');
         $this->driver('board_template');
         $this->driver('express_entity');
         $this->driver('express_entry');
