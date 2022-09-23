@@ -1,5 +1,5 @@
 {
-  "name": "concrete5/migration_tool",
+  "name": "concretecms/migration_tool",
   "description": "Import content into your concrete5 sites. Cross-grade from version 5.6, 5.7 and more.",
   "type": "concrete5-package",
   "license": "MIT",
