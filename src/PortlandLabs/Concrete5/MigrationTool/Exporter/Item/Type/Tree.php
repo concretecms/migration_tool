@@ -1,6 +1,8 @@
 <?php
 namespace PortlandLabs\Concrete5\MigrationTool\Exporter\Item\Type;
 
+use Concrete\Core\Database\Connection\Connection;
+use Concrete\Core\Support\Facade\Application;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Export\ExportItem;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Export\ObjectCollection;
 use Symfony\Component\HttpFoundation\Request;
@@ -50,9 +52,14 @@ class Tree extends AbstractType
     public function getResults(Request $request)
     {
         $trees = array();
-        $db = \Database::connection();
-        $r = $db->Execute('select treeID from Trees order by treeID asc');
-        while ($row = $r->FetchRow()) {
+        /** @var Connection $db */
+        $db = Application::getFacadeApplication()->make(Connection::class);
+        $qb = $db->createQueryBuilder();
+        $r = $qb->select('treeID')
+            ->from('Trees')
+            ->orderBy('treeID', 'asc')
+            ->execute();
+        while ($row = $r->fetchAssociative()) {
             $tree = new \PortlandLabs\Concrete5\MigrationTool\Entity\Export\Tree();
             $tree->setItemId($row['treeID']);
             $trees[] = $tree;
