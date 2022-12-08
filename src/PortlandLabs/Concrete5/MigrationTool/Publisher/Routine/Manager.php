@@ -62,6 +62,16 @@ class Manager extends CoreManager
         return new CreateThumbnailTypesRoutine();
     }
 
+    public function createCreateTreeTypesDriver()
+    {
+        return new CreateTreeTypesRoutine();
+    }
+
+    public function createCreateTreeNodeTypesDriver()
+    {
+        return new CreateTreeNodeTypesRoutine();
+    }
+
     public function createCreateBlockTypeSetsDriver()
     {
         return new CreateBlockTypeSetsRoutine();
@@ -237,6 +247,8 @@ class Manager extends CoreManager
         $this->driver('create_trees');
         $this->driver('create_social_links');
         $this->driver('create_thumbnail_types');
+        $this->driver('create_tree_types');
+        $this->driver('create_tree_node_types');
         $this->driver('create_jobs');
         $this->driver('create_job_sets');
         $this->driver('create_page_type_publish_target_types');
