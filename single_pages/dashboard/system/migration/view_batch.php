@@ -4,7 +4,7 @@ $dh = Core::make('helper/date');
 ?>
     <div class="ccm-dashboard-header-buttons">
 
-        <?php if ($activeProcesses) { ?>
+        <?php if (isset($activeProcesses) && $activeProcesses) { ?>
             <div class="btn-group btn-group">
                 <a href="javascript:void(0)" class="btn btn-danger" data-dialog-width="500" data-dialog="reset-processes"
                    data-dialog-title="<?= t('Reset All Processes') ?>"><?= t("Reset All Processes") ?></a>
@@ -215,7 +215,7 @@ $dh = Core::make('helper/date');
         <p><?= $site->getSiteName() ?></p>
     <?php } ?>
 
-<?php if ($activeProcesses) { ?>
+<?php if (isset($activeProcesses) && $activeProcesses) { ?>
 
     <div v-cloak id="ccm-migration-process-list">
 
