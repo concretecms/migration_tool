@@ -7,8 +7,8 @@ $dh = Core::make('helper/date');
 
     <div class="ccm-dashboard-form-actions-wrapper">
         <div class="ccm-dashboard-form-actions">
-            <a href="<?=$view->url('/dashboard/system/migration/import', 'view_batch', $batch->getID())?>" class="btn btn-secondary float-left"><?=t('Cancel')?></a>
-            <button class="float-right btn btn-primary" type="submit"><?=t('Save')?></button>
+            <a href="<?=$view->url('/dashboard/system/migration/import', 'view_batch', $batch->getID())?>" class="btn btn-secondary float-start"><?=t('Cancel')?></a>
+            <button class="float-end btn btn-primary" type="submit"><?=t('Save')?></button>
         </div>
     </div>
 

@@ -23,7 +23,7 @@ $dh = Core::make('helper/date');
             <div class="dialog-buttons">
                 <button class="btn btn-secondary float-start"
                         onclick="jQuery.fn.dialog.closeTop()"><?= t('Cancel') ?></button>
-                <button class="btn btn-danger float-right"
+                <button class="btn btn-danger float-end"
                         onclick="$('#ccm-dialog-delete-files form').submit()"><?= t('Clear Batch') ?></button>
             </div>
         </form>

@@ -84,8 +84,8 @@ class TargetItemList
         $query->setParameter('batch', $this->batch);
         $query->setParameter('source_item_identifier', $item->getIdentifier());
         $query->setParameter('type', $this->mapper->getHandle());
-        $targetItem = $query->getResult();
-        if (!is_object($targetItem[0])) {
+        $targetItem = $query->getResult()[0] ?? null;
+        if (!$targetItem) {
             if ($returnUnmapped) {
                 return new UnmappedTargetItem($this->mapper);
             } else {
@@ -93,7 +93,7 @@ class TargetItemList
             }
         }
 
-        return $targetItem[0];
+        return $targetItem;
     }
 
     public function getBatchTargetItemFromTargetItem(TargetItem $item)
@@ -105,11 +105,8 @@ class TargetItemList
         );
         $query->setParameter('batch', $this->batch);
         $query->setParameter('targetItem', $item);
-        $targetItem = $query->getResult();
-        if (is_object($targetItem[0])) {
-            return $targetItem[0];
-        }
-        return null;
+        $targetItem = $query->getResult()[0] ?? null;
+        return $targetItem;
     }
 
     public function getTargetItem($identifier)
