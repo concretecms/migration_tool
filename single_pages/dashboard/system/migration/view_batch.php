@@ -72,7 +72,7 @@ $dh = Core::make('helper/date');
                 <div class="dialog-buttons">
                     <button class="btn btn-light float-start"
                             onclick="jQuery.fn.dialog.closeTop()"><?= t('Cancel') ?></button>
-                    <button class="btn btn-danger float-right"
+                    <button class="btn btn-danger float-end"
                             onclick="$('#ccm-dialog-delete-batch form').submit()"><?= t('Delete Batch') ?></button>
                 </div>
             </form>
@@ -89,7 +89,7 @@ $dh = Core::make('helper/date');
                 <div class="dialog-buttons">
                     <button class="btn btn-light float-start"
                             onclick="jQuery.fn.dialog.closeTop()"><?= t('Cancel') ?></button>
-                    <button class="btn btn-danger float-right"
+                    <button class="btn btn-danger float-end"
                             onclick="$('#ccm-dialog-clear-batch form').submit()"><?= t('Clear Batch') ?></button>
                 </div>
             </form>
@@ -105,7 +105,7 @@ $dh = Core::make('helper/date');
                 <div class="dialog-buttons">
                     <button class="btn btn-light float-start"
                             onclick="jQuery.fn.dialog.closeTop()"><?= t('Cancel') ?></button>
-                    <button class="btn btn-danger float-right"
+                    <button class="btn btn-danger float-end"
                             data-action="remove-selected-items"><?= t('Delete Selected') ?></button>
                 </div>
             </form>
@@ -122,7 +122,7 @@ $dh = Core::make('helper/date');
                 <div class="dialog-buttons">
                     <button class="btn btn-secondary float-start"
                             onclick="jQuery.fn.dialog.closeTop()"><?= t('Cancel') ?></button>
-                    <button class="btn btn-danger float-right"
+                    <button class="btn btn-danger float-end"
                             onclick="$('#ccm-dialog-clear-batch-mappings form').submit()"><?= t('Clear Batch Mappings') ?></button>
                 </div>
             </form>
@@ -155,7 +155,7 @@ $dh = Core::make('helper/date');
                 <div class="dialog-buttons">
                     <button class="btn btn-light float-start"
                             onclick="jQuery.fn.dialog.closeTop()"><?= t('Cancel') ?></button>
-                    <button class="btn btn-primary float-right"
+                    <button class="btn btn-primary float-end"
                             data-action="publish-content"><?= t('Publish Batch') ?></button>
                 </div>
             </form>
@@ -191,7 +191,7 @@ $dh = Core::make('helper/date');
             <div class="dialog-buttons">
                 <button class="btn btn-secondary float-start"
                         onclick="jQuery.fn.dialog.closeTop()"><?= t('Cancel') ?></button>
-                <button class="btn btn-primary float-right" data-action="add-content"><?= t('Add Content') ?></button>
+                <button class="btn btn-primary float-end" data-action="add-content"><?= t('Add Content') ?></button>
             </div>
         </div>
         </div>
