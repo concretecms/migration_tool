@@ -53,6 +53,7 @@ class Container extends AbstractType
 
     public function getResults(Request $request)
     {
+        $items = [];
         $em = Core::make(EntityManager::class);
         $list = $em->getRepository(\Concrete\Core\Entity\Page\Container::class)->findAll();
         foreach ($list as $c) {
