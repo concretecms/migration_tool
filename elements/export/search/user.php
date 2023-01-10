@@ -11,7 +11,7 @@ $groups = array('' => t('** Choose a group'));
 foreach ($list->getResults() as $group) {
     $groups[$group->getGroupID()] = $group->getGroupDisplayName();
 }
-
+$_GET['gID'] = $_GET['gID'] ?? 0;
 ?>
 <div class="form-group">
     <label class="control-label"><?=t('Keywords')?></label>
