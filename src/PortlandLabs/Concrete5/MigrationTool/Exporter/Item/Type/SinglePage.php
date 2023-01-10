@@ -58,7 +58,7 @@ class SinglePage extends AbstractType
         $db = \Database::connection();
         $r = $db->Execute('select cID from Pages where cFilename is not null and cFilename <> "" and cID not in (select cID from Stacks) order by cID asc');
         $items = array();
-        while ($row = $r->FetchRow()) {
+        while ($row = $r->Fetch()) {
             $item = new \PortlandLabs\Concrete5\MigrationTool\Entity\Export\SinglePage();
             $item->setItemId($row['cID']);
             $items[] = $item;
