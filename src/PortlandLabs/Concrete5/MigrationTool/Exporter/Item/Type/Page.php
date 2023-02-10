@@ -25,14 +25,13 @@ class Page extends SinglePage
         $pl = new PageList();
         $site = \Core::make('site')->getActiveSiteForEditing();
         $pl->setSiteTreeObject($site->getSiteTreeObject());
-        $pl->includeSystemPages();
         $query = $request->query->all();
 
         $keywords = $query['keywords'];
         $ptID = $query['ptID'];
         $startingPoint = intval($query['startingPoint']);
         $datetime = \Core::make('helper/form/date_time')->translate('datetime', $query);
-        $includeSystemPages = $query['includeSystemPages'];
+        $includeSystemPages = $query['includeSystemPages'] ?? 0;
 
         $pl->ignorePermissions();
         if ($startingPoint) {

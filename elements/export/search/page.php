@@ -10,6 +10,7 @@ $pagetypes = array('' => t('** Choose a page type'));
 foreach ($list as $type) {
     $pagetypes[$type->getPageTypeID()] = $type->getPageTypeDisplayName();
 }
+$includeSystemPages = $includeSystemPages ?? 0;
 ?>
 <div class="form-group">
     <label class="form-label"><?=t('Keywords')?></label>
