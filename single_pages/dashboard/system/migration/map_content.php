@@ -152,12 +152,10 @@ foreach ($mappers->getDrivers() as $mapper) {
 
 <script type="text/javascript">
     $(function() {
-        //$('select[data-selector=target-item]').selectpicker();
         $('button[data-action=set-unmapped-to-ignored]').on('click', function() {
             $(this).parent().find('select').each(function() {
                 if ($(this).val() == '0') {
                     $(this).val('-1')
-                    //$(this).selectpicker('refresh')
                 }
             });
         });
