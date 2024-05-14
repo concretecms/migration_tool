@@ -15,11 +15,11 @@ class ValidateExpressAttributesStage extends ValidateAttributesStage
     public function __invoke($result)
     {
         $subject = $result->getSubject();
-        $batch = $subject->getBatch();
         $entity = $subject->getObject();
-
-        $attributeMapper = $this->mappers->driver($entity->getAttributeValidatorDriver());
-        $targetItemList = $this->mappers->createTargetItemList($batch, $attributeMapper);
+        $batch = $subject->getBatch();
+        $mappers = \Core::make('migration/manager/mapping');
+        $attributeMapper = $mappers->driver($entity->getAttributeValidatorDriver());
+        $targetItemList = $mappers->createTargetItemList($batch, $attributeMapper);
         foreach ($entity->getAttributes() as $attribute) {
             $item = new Item($entity->getEntity() . '|' . $attribute->getAttribute()->getHandle());
             $targetItem = $targetItemList->getSelectedTargetItem($item);
