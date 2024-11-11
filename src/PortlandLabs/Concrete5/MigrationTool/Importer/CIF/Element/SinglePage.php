@@ -10,13 +10,33 @@ class SinglePage extends Page
 {
     protected $pages = array();
 
+    /**
+     * {@inheritdoc}
+     *
+     * @see \PortlandLabs\Concrete5\MigrationTool\Importer\CIF\Element\Page::hasPageNodes()
+     */
+    public function hasPageNodes()
+    {
+        return isset($this->simplexml->singlepages->page);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \PortlandLabs\Concrete5\MigrationTool\Importer\CIF\Element\Page::getPageNodes()
+     */
+    public function getPageNodes()
+    {
+        return isset($this->simplexml->singlepages->page);
+    }
+    
     public function getObjectCollection(\SimpleXMLElement $element, Batch $batch)
     {
         $this->simplexml = $element;
         $i = 0;
         $collection = new SinglePageObjectCollection();
-        if ($this->simplexml->singlepages->page) {
-            foreach ($this->simplexml->singlepages->page as $node) {
+        if ($this->hasPageNodes()) {
+            foreach ($this->getPageNodes() as $node) {
                 $page = $this->parsePage($node);
                 $page->setPosition($i);
                 ++$i;
