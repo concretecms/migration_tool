@@ -54,6 +54,11 @@ class Page extends SinglePage
         $pl->setItemsPerPage(1000);
         $results = $pl->getResults();
         $items = array();
+        if (isset($parent) && !$parent->isError()) {
+            $item = new \PortlandLabs\Concrete5\MigrationTool\Entity\Export\Page();
+            $item->setItemId($parent->getCollectionID());
+            $items[] = $item;
+        }
         foreach ($results as $c) {
             $item = new \PortlandLabs\Concrete5\MigrationTool\Entity\Export\Page();
             $item->setItemId($c->getCollectionID());
