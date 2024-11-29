@@ -31,11 +31,21 @@ class SinglePage extends AbstractType
     public function getResultColumns(ExportItem $exportItem)
     {
         $c = \Page::getByID($exportItem->getItemIdentifier());
+        if ($c->isExternalLink()) {
+            $path = h($c->generatePagePath());
+            $path .= ' <i class="fas fa-external-link-alt"></i> ' . h($c->getCollectionPointerExternalLink());
+        } else {
+            $path = h($c->getCollectionPath() ?: '/');
+            if ($c->isAliasPage()) {
+                $originalPage = \Page::getByID($c->getCollectionID());
+                $path .= ' <i class="fas fa-sign-out-alt"></i> ' . h($originalPage->getCollectionPath());
+            }
+        }
 
-        return array(
-            $c->getCollectionPath() ?: '/',
-            $c->getCollectionName(),
-        );
+        return [
+            $path,
+            h($c->getCollectionName()),
+        ];
     }
 
     public function getItemsFromRequest($array)
@@ -44,8 +54,13 @@ class SinglePage extends AbstractType
         foreach ($array as $id) {
             $c = \Page::getByID($id);
             if (is_object($c) && !$c->isError()) {
+                if ($c->isAliasPage()) {
+                    $cID = $c->getCollectionPointerOriginalID();
+                } else {
+                    $cID = $c->getCollectionID();
+                }
                 $page = new \PortlandLabs\Concrete5\MigrationTool\Entity\Export\SinglePage();
-                $page->setItemId($c->getCollectionID());
+                $page->setItemId($cID);
                 $items[] = $page;
             }
         }
