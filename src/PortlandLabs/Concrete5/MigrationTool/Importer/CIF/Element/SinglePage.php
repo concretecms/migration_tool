@@ -27,7 +27,7 @@ class SinglePage extends Page
      */
     public function getPageNodes()
     {
-        return isset($this->simplexml->singlepages->page);
+        return $this->simplexml->singlepages->page;
     }
     
     public function getObjectCollection(\SimpleXMLElement $element, Batch $batch)
