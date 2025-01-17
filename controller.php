@@ -8,20 +8,7 @@ use Concrete\Core\Page\Type\Type;
 use Page;
 use PortlandLabs\Concrete5\MigrationTool\Batch\ContentMapper\Manager;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\BatchValidator;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Pipeline\Stage\ValidateAreasStage;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Pipeline\Stage\ValidateAttributesStage;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Pipeline\Stage\ValidateBatchRecordsStage;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Pipeline\Stage\ValidateBlocksStage;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Pipeline\Stage\ValidateBlockTypesStage;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Pipeline\Stage\ValidateBlockValuesStage;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Pipeline\Stage\ValidateExpressAttributesStage;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Pipeline\Stage\ValidatePagePathStage;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Pipeline\Stage\ValidatePageTemplatesStage;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Pipeline\Stage\ValidatePageTypesStage;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Pipeline\Stage\ValidateReferencedContentItemsStage;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Pipeline\Stage\ValidateReferencedStacksStage;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Pipeline\Stage\ValidateUsersStage;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Pipeline\Stage\ValidateUserGroupsStage;
+use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Pipeline\Stage;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\StandardValidator;
 use PortlandLabs\Concrete5\MigrationTool\Event\EventSubscriber;
 use PortlandLabs\Concrete5\MigrationTool\Exporter\Item\Type\Manager as ExporterItemTypeManager;
@@ -129,13 +116,13 @@ class Controller extends Package
         \Core::bind('migration/batch/page/validator', function ($app, $batch) {
             if (isset($batch[0])) {
                 $validator = new StandardValidator($batch[0]);
-                $validator->addPipelineStage(new ValidateAttributesStage());
-                $validator->addPipelineStage(new ValidatePageTemplatesStage());
-                $validator->addPipelineStage(new ValidateAreasStage());
-                $validator->addPipelineStage(new ValidateBlocksStage());
-                $validator->addPipelineStage(new ValidatePageTypesStage());
-                $validator->addPipelineStage(new ValidatePagePathStage());
-                $validator->addPipelineStage(new ValidateUsersStage());
+                $validator->addPipelineStage(new Stage\ValidateAttributesStage());
+                $validator->addPipelineStage(new Stage\ValidatePageTemplatesStage());
+                $validator->addPipelineStage(new Stage\ValidateAreasStage());
+                $validator->addPipelineStage(new Stage\ValidateBlocksStage());
+                $validator->addPipelineStage(new Stage\ValidatePageTypesStage());
+                $validator->addPipelineStage(new Stage\ValidatePagePathStage());
+                $validator->addPipelineStage(new Stage\ValidateUsersStage());
                 return $validator;
             }
         });
@@ -143,7 +130,7 @@ class Controller extends Package
         \Core::bind('migration/batch/site/validator', function ($app, $batch) {
             if (isset($batch[0])) {
                 $validator = new StandardValidator();
-                $validator->addPipelineStage(new ValidateAttributesStage());
+                $validator->addPipelineStage(new Stage\ValidateAttributesStage());
                 return $validator;
             }
         });
@@ -151,8 +138,8 @@ class Controller extends Package
         \Core::bind('migration/batch/user/validator', function ($app, $batch) {
             if (isset($batch[0])) {
                 $validator = new StandardValidator();
-                $validator->addPipelineStage(new ValidateAttributesStage());
-                $validator->addPipelineStage(new ValidateUserGroupsStage());
+                $validator->addPipelineStage(new Stage\ValidateAttributesStage());
+                $validator->addPipelineStage(new Stage\ValidateUserGroupsStage());
                 return $validator;
             }
         });
@@ -160,23 +147,23 @@ class Controller extends Package
         \Core::bind('migration/batch/express/entry/validator', function ($app, $batch) {
             if (isset($batch[0])) {
                 $validator = new StandardValidator();
-                $validator->addPipelineStage(new ValidateExpressAttributesStage());
+                $validator->addPipelineStage(new Stage\ValidateExpressAttributesStage());
                 return $validator;
             }
         });
 
         \Core::bindShared('migration/batch/validator', function ($app, $batch) {
             $validator = new BatchValidator();
-            $validator->addPipelineStage(new ValidateBatchRecordsStage());
+            $validator->addPipelineStage(new Stage\ValidateBatchRecordsStage());
             return $validator;
         });
 
         \Core::bind('migration/batch/block/validator', function ($app, $batch) {
             $validator = new StandardValidator();
-            $validator->addPipelineStage(new ValidateBlockTypesStage());
-            $validator->addPipelineStage(new ValidateReferencedStacksStage());
-            $validator->addPipelineStage(new ValidateReferencedContentItemsStage());
-            $validator->addPipelineStage(new ValidateBlockValuesStage());
+            $validator->addPipelineStage(new Stage\ValidateBlockTypesStage());
+            $validator->addPipelineStage(new Stage\ValidateReferencedStacksStage());
+            $validator->addPipelineStage(new Stage\ValidateReferencedContentItemsStage());
+            $validator->addPipelineStage(new Stage\ValidateBlockValuesStage());
             return $validator;
         });
 
