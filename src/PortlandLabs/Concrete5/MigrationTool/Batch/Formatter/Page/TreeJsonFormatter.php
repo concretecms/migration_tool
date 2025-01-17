@@ -15,7 +15,18 @@ class TreeJsonFormatter extends AbstractTreeJsonFormatter
             $messages = $this->getValidationMessages($page);
             $formatter = $messages->getFormatter();
             $node = new \stdClass();
-            $node->title = $page->getName();
+            $node->title = h($page->getName());
+            if ($page->getLocaleRoot() !== null) {
+                $node->title .= ' <span class="badge text-bg-secondary">' . h(implode('_', $page->getLocaleRoot())) . '</span>';
+            }
+            switch ($page->getKind()) {
+                case $page::KIND_ALIAS:
+                    $node->icon = 'fas fa-sign-out-alt';
+                    break;
+                case $page::KIND_EXTERNAL_LINK:
+                    $node->icon = 'fas fa-external-link-alt';
+                    break;
+            }
             $node->lazy = true;
             $node->nodetype = 'page';
             $node->extraClasses = 'migration-node-main';
@@ -27,7 +38,7 @@ class TreeJsonFormatter extends AbstractTreeJsonFormatter
             }
 
             $node->id = $page->getId();
-            $node->pagePath =  $page->getBatchPath();
+            $node->pagePath =  '/' . $page->getBatchPath();
             $node->pageType = $page->getType();
             $node->pageTemplate = $page->getTemplate();
             if (!$skipItem) {
