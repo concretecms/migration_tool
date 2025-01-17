@@ -122,6 +122,8 @@ class Controller extends Package
                 $validator->addPipelineStage(new Stage\ValidateBlocksStage());
                 $validator->addPipelineStage(new Stage\ValidatePageTypesStage());
                 $validator->addPipelineStage(new Stage\ValidatePagePathStage());
+                $validator->addPipelineStage(new Stage\ValidateExternalLinkStage());
+                $validator->addPipelineStage(new Stage\ValidateAliasPage());
                 $validator->addPipelineStage(new Stage\ValidateUsersStage());
                 return $validator;
             }
