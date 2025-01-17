@@ -4,19 +4,13 @@ namespace Concrete\Package\MigrationTool\Controller\SinglePage\Dashboard\System\
 use Concrete\Core\File\Filesystem;
 use Concrete\Core\File\Importer;
 use Concrete\Core\File\Set\Set;
-use Concrete\Core\Command\Batch\Batch as BatchBuilder;
-use Concrete\Core\Filesystem\ElementManager;
 use Concrete\Core\Page\PageList;
 use Concrete\Package\MigrationTool\Page\Controller\DashboardPageController;
 use Doctrine\Common\Collections\ArrayCollection;
 use PortlandLabs\Concrete5\MigrationTool\Batch\BatchService;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Command\DeleteBatchProcessesCommand;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Command\MapContentTypesBatchProcessFactory;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Command\MapContentTypesCommand;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Command\NormalizePagePathsCommand;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Command\PublishBatchCommand;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Command\ScanContentTypesCommand;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Command\TransformContentTypesBatchProcessFactory;
 use PortlandLabs\Concrete5\MigrationTool\Batch\ContentMapper\PresetManager;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Formatter\ExpressEntry\TreeEntryJsonFormatter;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Formatter\Page\TreePageJsonFormatter;
@@ -337,7 +331,6 @@ class Import extends DashboardPageController
                     $settings[] = $setting;
                 }
             }
-            $service = $this->app->make(BatchService::class);
             if ($batch->getBatchProcesses()->count()) {
                 $processes = [];
                 foreach($batch->getBatchProcesses() as $batchProcess) {
