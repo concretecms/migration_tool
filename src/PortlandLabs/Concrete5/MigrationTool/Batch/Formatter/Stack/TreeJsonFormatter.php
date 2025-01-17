@@ -8,18 +8,25 @@ defined('C5_EXECUTE') or die("Access Denied.");
 
 class TreeJsonFormatter extends AbstractTreeJsonFormatter
 {
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
-        $response = array();
-
-        $r = \Database::connection()->getEntityManager()->getRepository('\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch');
+        $response = [];
 
         foreach ($this->collection->getStacks() as $stack) {
+            /** @var \PortlandLabs\Concrete5\MigrationTool\Entity\Import\AbstractStack $stack */
             $messages = $this->getValidationMessages($stack);
             $stackFormatter = $stack->getStackFormatter();
             $formatter = $messages->getFormatter();
             $node = new \stdClass();
-            $node->title = $stack->getName();
+            $node->title = h($stack->getName());
+            switch ($stack->getType()) {
+                case 'global_area':
+                case 'stack':
+                    if ($stack->getLocaleID() !== '') {
+                        $node->title .= ' <span class="badge text-bg-secondary">' . h($stack->getLocaleID()) . '</span>'; 
+                    }
+                    break;
+            }
             $node->stackType = $stack->getType();
             $node->pagePath = $stack->getPath();
             $node->icon = $stackFormatter->getIconClass();
