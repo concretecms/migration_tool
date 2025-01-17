@@ -1,17 +1,11 @@
 <?php
 namespace Concrete\Package\MigrationTool;
 
-use Concrete\Core\Application\Application;
 use Concrete\Core\Asset\AssetList;
-use Concrete\Core\Command\Process\Command\HandleProcessMessageCommandHandler;
-use Concrete\Core\Console\Command;
 use Concrete\Core\Messenger\MessageBusManager;
-use Concrete\Core\Messenger\Registry\CommandBus;
-use Concrete\Core\Messenger\Registry\SynchronousCommandBus;
 use Concrete\Core\Package\Package;
 use Concrete\Core\Page\Type\Type;
 use Page;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Command\PublishBatchCommandHandler;
 use PortlandLabs\Concrete5\MigrationTool\Batch\ContentMapper\Manager;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\BatchValidator;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Pipeline\Stage\ValidateAreasStage;
@@ -44,11 +38,9 @@ use PortlandLabs\Concrete5\MigrationTool\Importer\Wordpress\Block\Manager as Wor
 use PortlandLabs\Concrete5\MigrationTool\Importer\Wordpress\Manager as WordpressImportManager;
 use PortlandLabs\Concrete5\MigrationTool\Messenger\Middleware\PublisherExceptionHandlingMiddleware;
 use PortlandLabs\Concrete5\MigrationTool\Publisher\Block\Manager as BlockPublisherManager;
-use PortlandLabs\Concrete5\MigrationTool\Publisher\Command\PublisherCommand;
 use PortlandLabs\Concrete5\MigrationTool\Publisher\ContentImporter\ValueInspector\InspectionRoutine\BatchPageRoutine;
 use PortlandLabs\Concrete5\MigrationTool\Publisher\Routine\Manager as PublisherManager;
 use SinglePage;
-use Symfony\Component\Messenger\MessageBusInterface;
 
 class Controller extends Package
 {
