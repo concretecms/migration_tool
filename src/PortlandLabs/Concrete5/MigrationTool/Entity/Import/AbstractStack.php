@@ -121,7 +121,7 @@ abstract class AbstractStack implements PublishableInterface, LoggableInterface
     }
 
     /**
-     * @return mixed
+     * @return \Doctrine\Common\Collections\Collection<\PortlandLabs\Concrete5\MigrationTool\Entity\Import\StackBlock>
      */
     public function getBlocks()
     {

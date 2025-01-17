@@ -105,7 +105,7 @@ class Batch implements BatchInterface
     }
 
     /**
-     * @return mixed
+     * @return \Concrete\Core\Entity\Site\Site|null
      */
     public function getSite()
     {

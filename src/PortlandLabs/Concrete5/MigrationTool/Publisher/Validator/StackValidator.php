@@ -3,6 +3,9 @@ namespace PortlandLabs\Concrete5\MigrationTool\Publisher\Validator;
 
 use Concrete\Core\Page\Stack\Stack;
 
+/**
+ * @property \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Stack|\PortlandLabs\Concrete5\MigrationTool\Entity\Import\GlobalArea $object
+ */
 class StackValidator extends AbstractValidator
 {
     public function skipItem()

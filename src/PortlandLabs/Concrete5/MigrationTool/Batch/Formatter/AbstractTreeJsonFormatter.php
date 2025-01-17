@@ -9,7 +9,27 @@ defined('C5_EXECUTE') or die("Access Denied.");
 
 abstract class AbstractTreeJsonFormatter implements \JsonSerializable
 {
+    /**
+     * @var \Doctrine\ORM\EntityManagerInterface
+     */
     protected $entityManager;
+
+    /**
+     * @var \PortlandLabs\Concrete5\MigrationTool\Entity\Import\ObjectCollection
+     */
+    protected $collection;
+
+    /**
+     * @var \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch	
+
+     */
+    protected $batch;
+
+    /**
+     * @var \PortlandLabs\Concrete5\MigrationTool\Batch\Validator\ValidatorInterface	
+
+     */
+    protected $validator;
 
     public function __construct(ObjectCollection $collection)
     {

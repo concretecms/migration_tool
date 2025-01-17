@@ -6,8 +6,14 @@ use PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch;
 
 class Exporter
 {
+    /**
+     * @var \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch
+     */
     protected $batch;
-    protected $built = false;
+
+    /**
+     * @var \SimpleXMLElement|null
+     */
     protected $element;
 
     public function __construct(Batch $batch)
@@ -34,6 +40,9 @@ class Exporter
         }
     }
 
+    /**
+     * @return \SimpleXMLElement
+     */
     public function getElement()
     {
         if (!$this->built) {

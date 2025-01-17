@@ -17,7 +17,7 @@ class ValidateUsersStage implements StageInterface
         $subject = $result->getSubject();
         $batch = $subject->getBatch();
         $page = $subject->getObject();
-
+        /** @var \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page $page */
         if ($page->getUser()) {
             $mapper = new User();
             $targetItemList = new TargetItemList($batch, $mapper);

@@ -11,6 +11,7 @@ class TreeJsonFormatter extends AbstractTreeJsonFormatter
     {
         $response = array();
         foreach ($this->collection->getPages() as $page) {
+            /** @var \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page $page */
             $messages = $this->getValidationMessages($page);
             $formatter = $messages->getFormatter();
             $node = new \stdClass();

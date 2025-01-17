@@ -125,7 +125,7 @@ class AbstractBlock implements LoggableInterface
     }
 
     /**
-     * @return mixed
+     * @return \PortlandLabs\Concrete5\MigrationTool\Entity\Import\BlockValue\BlockValue|null
      */
     public function getBlockValue()
     {
