@@ -2,6 +2,7 @@
 namespace PortlandLabs\Concrete5\MigrationTool\Batch\Formatter\Stack;
 
 use PortlandLabs\Concrete5\MigrationTool\Batch\Formatter\AbstractTreeJsonFormatter;
+use PortlandLabs\Concrete5\MigrationTool\Batch\Formatter\StyleSet\TreeJsonFormatter as StyleSetTreeJsonFormatter;
 
 defined('C5_EXECUTE') or die("Access Denied.");
 
