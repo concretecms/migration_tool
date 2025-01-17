@@ -14,9 +14,15 @@ class Stack implements ElementParserInterface
 {
     protected $blockImporter;
 
+    /**
+     * @var \PortlandLabs\Concrete5\MigrationTool\Importer\CIF\Element\StyleSet
+     */
+    protected $styleSetImporter;
+    
     public function __construct()
     {
         $this->blockImporter = \Core::make('migration/manager/import/cif_block');
+        $this->styleSetImporter = new StyleSet();
     }
 
     protected function parseStack(\SimpleXMLElement $element)
