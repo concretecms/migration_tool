@@ -52,6 +52,11 @@ abstract class AbstractStack implements PublishableInterface, LoggableInterface
     protected $name;
 
     /**
+     * @ORM\Column(type="string", length=20, nullable=false)
+     */
+    protected $localeID = '';
+
+    /**
      * @ORM\Column(type="integer")
      */
     protected $position;

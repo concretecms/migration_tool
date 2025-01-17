@@ -14,6 +14,21 @@ class GlobalArea extends AbstractStack
         return 'global_area';
     }
 
+    public function getLocaleID(): string
+    {
+        return $this->localeID;
+    }
+
+    /**
+     * @return $this
+     */
+    public function setLocaleID(string $value): self
+    {
+        $this->localeID = $value;
+
+        return $this;
+    }
+
     public function getStackFormatter()
     {
         return new GlobalAreaFormatter($this);
