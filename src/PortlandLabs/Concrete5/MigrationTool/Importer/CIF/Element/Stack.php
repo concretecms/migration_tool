@@ -12,6 +12,9 @@ defined('C5_EXECUTE') or die("Access Denied.");
 
 class Stack implements ElementParserInterface
 {
+    /**
+     * @var \PortlandLabs\Concrete5\MigrationTool\Importer\CIF\Block\Manager
+     */
     protected $blockImporter;
 
     /**
@@ -29,10 +32,13 @@ class Stack implements ElementParserInterface
     {
         if ($element->getName() == 'folder') {
             $item = new \PortlandLabs\Concrete5\MigrationTool\Entity\Import\StackFolder();
-        } elseif ((string) $element['type'] == 'global_area') {
-            $item = new \PortlandLabs\Concrete5\MigrationTool\Entity\Import\GlobalArea();
         } else {
-            $item = new \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Stack();
+            if ((string) $element['type'] == 'global_area') {
+                $item = new \PortlandLabs\Concrete5\MigrationTool\Entity\Import\GlobalArea();
+            } else {
+                $item = new \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Stack();
+            }
+            $item->setLocaleID((string) $element['section']);
         }
         $item->setName((string) $element['name']);
         $item->setPath((string) $element['path']);
