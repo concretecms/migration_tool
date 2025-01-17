@@ -38,7 +38,7 @@ class Exporter
      */
     public function getElement()
     {
-        if (!$this->built) {
+        if (!$this->element) {
             $this->build();
         }
 
