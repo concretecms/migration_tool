@@ -9,33 +9,77 @@ use PortlandLabs\Concrete5\MigrationTool\Entity\Import\PageAttribute;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\PageObjectCollection;
 use PortlandLabs\Concrete5\MigrationTool\Importer\CIF\ElementParserInterface;
 use PortlandLabs\Concrete5\MigrationTool\Importer\Sanitizer\PagePathSanitizer;
+use Concrete\Core\Utility\Service\Xml;
 
 defined('C5_EXECUTE') or die("Access Denied.");
 
 class Page implements ElementParserInterface
 {
+    /**
+     * @var \PortlandLabs\Concrete5\MigrationTool\Importer\CIF\Attribute\Value\Manager
+     */
     protected $attributeImporter;
+
+    /**
+     * @var \PortlandLabs\Concrete5\MigrationTool\Importer\CIF\Block\Manager
+     */
     protected $blockImporter;
+
+    /**
+     * @var \PortlandLabs\Concrete5\MigrationTool\Importer\CIF\Element\StyleSet
+     */
+    protected $styleSetImporter;
+
+    /**
+     * @var \PortlandLabs\Concrete5\MigrationTool\Importer\Sanitizer\PagePathSanitizer
+     */
+    protected $pathSanitizer;
+
+    /**
+     * @var \Concrete\Core\Utility\Service\Xml
+     */
+    protected $xmlService;
+
+    /**
+     * @var \SimpleXMLElement|null
+     */
     protected $simplexml;
-    protected $pages = array();
 
     public function __construct()
     {
-        $this->attributeImporter = \Core::make('migration/manager/import/attribute/value');
-        $this->blockImporter = \Core::make('migration/manager/import/cif_block');
+        $this->attributeImporter = app('migration/manager/import/attribute/value');
+        $this->blockImporter = app('migration/manager/import/cif_block');
         $this->styleSetImporter = new StyleSet();
+        $this->pathSanitizer = app(PagePathSanitizer::class);
+        $this->xmlService = app(Xml::class);
     }
 
+    /**
+     * @return bool
+     */
     public function hasPageNodes()
     {
-        return isset($this->simplexml->pages->page);
+        return isset($this->simplexml->pages->page) || isset($this->simplexml->pages->alias) || isset($this->simplexml->pages->{'external-link'});
     }
 
+    /**
+     * @return \Traversable<\SimpleXMLElement>
+     */
     public function getPageNodes()
     {
-        return $this->simplexml->pages->page;
+        $result = [];
+        foreach ($this->simplexml->pages->children() as $child) {
+            if (in_array($child->getName(), ['page', 'alias', 'external-link'], true)) {
+                yield $child;
+            }
+        }
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * @see \PortlandLabs\Concrete5\MigrationTool\Importer\CIF\ElementParserInterface::getObjectCollection()
+     */
     public function getObjectCollection(\SimpleXMLElement $element, Batch $batch)
     {
         $this->simplexml = $element;
@@ -54,27 +98,73 @@ class Page implements ElementParserInterface
         return $collection;
     }
 
+    /**
+     * @param \SimpleXMLElement $node
+     *
+     * @return \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page
+     */
     protected function parsePage($node)
     {
-        $sanitizer = new PagePathSanitizer();
-        $originalPath = $sanitizer->sanitize((string) $node['path']);
-
         $page = new \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page();
         $page->setName((string) html_entity_decode($node['name']));
+        $page->setOriginalPath($this->pathSanitizer->sanitize((string) $node['path']));
         $page->setPublicDate((string) $node['public-date']);
-        $page->setOriginalPath($originalPath);
         if (isset($node['package'])) {
             $page->setPackage((string) $node['package']);
         }
-        $page->setTemplate((string) $node['template']);
-        $page->setType((string) $node['pagetype']);
         $page->setUser((string) $node['user']);
-        $page->setDescription((string) html_entity_decode($node['description']));
-
-        $this->parseAttributes($page, $node);
-        $this->parseAreas($page, $node);
+        switch ($node->getName()) {
+            case 'alias':
+                $this->parseAlias($page, $node);
+                break;
+            case 'external-link':
+                $this->parseExternalLink($page, $node);
+                break;
+            case 'page':
+            default:
+                $this->parseRegularPage($page, $node);
+                break;
+        }
 
         return $page;
+    }
+
+    protected function parseAlias(\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page $page, \SimpleXMLElement $node): void
+    {
+        $page
+            ->setKind($page::KIND_ALIAS)
+            ->setTarget($this->pathSanitizer->sanitize((string) $node['original-path']))
+        ;
+        $this->parseAdditionalPaths($page, $node);
+    }
+
+    protected function parseExternalLink(\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page $page, \SimpleXMLElement $node): void
+    {
+        $page
+            ->setKind($page::KIND_EXTERNAL_LINK)
+            ->setTarget((string) $node['destination'])
+            ->setNewWindow(
+                method_exists($this->xmlService, 'getBool')
+                ? $this->xmlService->getBool($node['new-window'])
+                : filter_var((string) $node['new-window'], FILTER_VALIDATE_BOOLEAN)
+            )
+        ;
+    }
+
+    protected function parseRegularPage(\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page $page, \SimpleXMLElement $node): void
+    {
+        $page->setKind($page::KIND_REGULAR_PAGE);
+        $page->setDescription((string) html_entity_decode($node['description']));
+        if (isset($node->locale)) {
+            $page->setLocaleRoot((string) $node->locale['language'], (string) $node->locale['country']);
+        }
+        $this->parseAttributes($page, $node);
+        $page->setTemplate((string) $node['template']);
+        $page->setType((string) $node['pagetype']);
+        $this->parseAdditionalPaths($page, $node);
+        $this->parseHRefLangs($page, $node);
+        
+        $this->parseAreas($page, $node);
     }
 
     protected function parseAttributes(\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page $page, \SimpleXMLElement $node)
@@ -89,6 +179,37 @@ class Page implements ElementParserInterface
                 $page->attributes->add($pageAttribute);
                 ++$i;
             }
+        }
+    }
+
+    protected function parseAdditionalPaths(\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page $page, \SimpleXMLElement $node)
+    {
+        if (!isset($node->{'additional-path'})) {
+            return;
+        }
+        foreach ($node->{'additional-path'} as $pathNode) {
+            $additionalPath = new \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page\AdditionalPath();
+            $additionalPath
+                ->setPage($page)
+                ->setPath($this->pathSanitizer->sanitize((string) $pathNode['path']))
+            ;
+            $page->getAdditionalPaths()->add($additionalPath);
+        }
+    }
+
+    protected function parseHRefLangs(\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page $page, \SimpleXMLElement $node)
+    {
+        if (!isset($node->hreflang) || !isset($node->hreflang->alternate)) {
+            return;
+        }
+        foreach ($node->hreflang->alternate as $alternateNode) {
+            $hreflang = new \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page\HRefLang();
+            $hreflang
+                ->setPage($page)
+                ->setLocaleID((string) $alternateNode['locale'])
+                ->setPathForLocale((string) $alternateNode['path'])
+            ;
+            $page->getHRefLangs()->add($hreflang);
         }
     }
 
