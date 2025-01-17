@@ -25,6 +25,9 @@ abstract class AbstractPageCommandHandler extends AbstractHandler
         );
     }
 
+    /**
+     * @return \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page|null
+     */
     public function getPage($id)
     {
         $entityManager = \Database::connection()->getEntityManager();
