@@ -3,6 +3,7 @@ namespace Concrete\Package\MigrationTool\Controller\SinglePage\Dashboard\System\
 
 use Concrete\Core\Application\EditResponse;
 use Concrete\Core\File\File;
+use Concrete\Core\Http\ResponseFactory;
 use Concrete\Core\Page\Controller\DashboardSitePageController;
 use Concrete\Package\MigrationTool\Page\Controller\DashboardPageController;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -155,19 +156,22 @@ class Export extends DashboardSitePageController
     {
         $r = $this->entityManager->getRepository('\PortlandLabs\Concrete5\MigrationTool\Entity\Export\Batch');
         $batch = $r->findOneById($id);
-        if (is_object($batch)) {
-            $exporter = new Exporter($batch);
-            if ($this->request->request->get('download')) {
-                header('Content-disposition: attachment; filename="export.xml"');
-                header('Content-type: "text/xml"; charset="utf8"');
-            } else {
-                header('Content-type: text/xml');
-            }
-            echo $exporter->getElement()->asXML();
-            exit;
-        } else {
-            $this->view();
+        if (is_object(!$batch)) {
+            return $this->view();
         }
+        $headers = [
+            'Content-Type' => 'text/xml; charset=' . APP_CHARSET,
+        ];
+        if ($this->request->request->get('download')) {
+            $headers['Content-Disposition'] = 'attachment; filename="export.xml"';
+        }
+        $exporter = new Exporter($batch);
+
+        return $this->app->make(ResponseFactory::class)->create(
+            $exporter->getElement()->asXML(),
+            200,
+            $headers
+        );
     }
 
     public function add_items_to_batch()

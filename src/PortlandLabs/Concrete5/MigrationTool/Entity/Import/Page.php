@@ -1,6 +1,7 @@
 <?php
 namespace PortlandLabs\Concrete5\MigrationTool\Entity\Import;
 
+use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use PortlandLabs\Concrete5\MigrationTool\Batch\ContentMapper\Item\Item;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Attribute\ValidatableAttributesInterface;
@@ -15,6 +16,12 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Page implements PublishableInterface, ValidatableAttributesInterface, LoggableInterface
 {
+    public const KIND_REGULAR_PAGE = 'page';
+
+    public const KIND_ALIAS = 'alias';
+
+    public const KIND_EXTERNAL_LINK = 'external_link';
+
     /**
      * @ORM\Id @ORM\Column(type="guid")
      * @ORM\GeneratedValue(strategy="UUID")
@@ -34,7 +41,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     /**
      * @ORM\Column(type="string")
      */
-    protected $public_date;
+    protected $public_date = '';
 
     /**
      * @ORM\Column(type="string")
@@ -49,22 +56,22 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     /**
      * @ORM\Column(type="string")
      */
-    protected $type;
+    protected $type = '';
 
     /**
      * @ORM\Column(type="string")
      */
-    protected $template;
+    protected $template = '';
 
     /**
      * @ORM\Column(type="string")
      */
-    protected $user;
+    protected $user = '';
 
     /**
      * @ORM\Column(type="text")
      */
-    protected $description;
+    protected $description = '';
 
     /**
      * @ORM\Column(type="integer")
@@ -87,6 +94,38 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     protected $is_global = false;
 
     /**
+     * @ORM\Column(type="string", nullable=false, length=30)
+     *
+     * @var string
+     */
+    protected $kind = self::KIND_REGULAR_PAGE;
+
+    /**
+     * For aliases and external links.
+     *
+     * @ORM\Column(type="text", nullable=false)
+     *
+     * @var string
+     */
+    protected $target = '';
+
+    /**
+     * For external links.
+     *
+     * @ORM\Column(type="boolean", nullable=false)
+     *
+     * @var bool
+     */
+    protected $newWindow = false;
+
+    /**
+     * @ORM\Column(type="simple_array", nullable=true)
+     *
+     * @var array|null
+     */
+    protected $localeRoot = null;
+
+    /**
      * @ORM\OneToMany(targetEntity="\PortlandLabs\Concrete5\MigrationTool\Entity\Import\PageAttribute", mappedBy="page", cascade={"persist", "remove"})
      **/
     public $attributes;
@@ -96,6 +135,20 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
      * @ORM\OrderBy({"name" = "ASC"})
      **/
     public $areas;
+
+    /**
+     * @ORM\OneToMany(targetEntity="\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page\HRefLang", mappedBy="page", cascade={"persist", "remove"}, orphanRemoval=true)
+     *
+     * @var \Doctrine\Common\Collections\Collection<\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page\HRefLang>
+     **/
+    protected $hrefLangs;
+
+    /**
+     * @ORM\OneToMany(targetEntity="\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page\AdditionalPath", mappedBy="page", cascade={"persist", "remove"}, orphanRemoval=true)
+     *
+     * @var \Doctrine\Common\Collections\Collection<\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page\AdditionalPath>
+     */
+    protected $additionalPaths;
 
     /**
      * @ORM\ManyToOne(targetEntity="\PortlandLabs\Concrete5\MigrationTool\Entity\Import\PageObjectCollection")
@@ -127,6 +180,8 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     {
         $this->attributes = new ArrayCollection();
         $this->areas = new ArrayCollection();
+        $this->hrefLangs = new ArrayCollection();
+        $this->additionalPaths = new ArrayCollection();
     }
 
     /**
@@ -401,6 +456,105 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     public function setIsGlobal($is_global)
     {
         $this->is_global = $is_global;
+    }
+
+    public function getKind(): string
+    {
+        return $this->kind;
+    }
+
+    /**
+     * @return $this
+     */
+    public function setKind(string $value): self
+    {
+        $this->kind = $value;
+
+        return $this;
+    }
+
+    /**
+     * For aliases and external links.
+     */
+    public function getTarget(): string
+    {
+        return $this->target;
+    }
+
+    /**
+     * For aliases and external links.
+     *
+     * @return $this
+     */
+    public function setTarget(string $value): self
+    {
+        $this->target = $value;
+
+        return $this;
+    }
+
+    /**
+     * For external links.
+     */
+    public function isNewWindow(): bool
+    {
+        return $this->newWindow;
+    }
+
+    /**
+     * For aliases and external links.
+     *
+     * @return $this
+     */
+    public function setNewWindow(bool $value): self
+    {
+        $this->newWindow = $value;
+
+        return $this;
+    }
+
+    public function getLocaleRoot(): ?array
+    {
+        return empty($this->localeRoot) ? null : [
+            'language' => $this->localeRoot[0],
+            'country' => $this->localeRoot[1] ?? '',
+        ];
+    }
+
+    /**
+     * @return $this
+     */
+    public function setLocaleRoot(string $language, string $country): self
+    {
+        $this->localeRoot = $language === '' ? null : [$language, $country];
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function clearLocaleRoot(): self
+    {
+        $this->localeRoot = null;
+
+        return $this;
+    }
+
+    /**
+     * @return \Doctrine\Common\Collections\Collection<\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page\HRefLang>
+     */
+    public function getHRefLangs(): Collection
+    {
+        return $this->hrefLangs;
+    }
+
+    /**
+     * @return \Doctrine\Common\Collections\Collection<\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page\AdditionalPath>
+     */
+    public function getAdditionalPaths(): Collection
+    {
+        return $this->additionalPaths;
     }
 
     public function createPublisherLogObject($publishedObject = null)
