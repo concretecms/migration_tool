@@ -120,7 +120,7 @@ class TreePageJsonFormatter implements \JsonSerializable
             $nodes[] = [
                 'icon' => 'fas fa-link',
                 'title' => t('Additional Path'),
-                'itemvalue' => h($additionalPath->getPath()),
+                'itemvalue' => h('/' . $additionalPath->getPath()),
             ];
         }
         foreach ($this->page->getHRefLangs() as $hrefLang) {
