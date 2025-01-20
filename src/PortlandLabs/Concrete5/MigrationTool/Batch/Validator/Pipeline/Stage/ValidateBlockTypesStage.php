@@ -4,7 +4,6 @@ namespace PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Pipeline\Stage;
 use League\Pipeline\StageInterface;
 use PortlandLabs\Concrete5\MigrationTool\Batch\ContentMapper\Item\BlockItem;
 use PortlandLabs\Concrete5\MigrationTool\Batch\ContentMapper\TargetItemList;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\BatchObjectCollectionValidatorSubject;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\BatchObjectValidatorSubject;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\BatchValidatorResult;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Message;

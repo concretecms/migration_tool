@@ -7,7 +7,6 @@ use PortlandLabs\Concrete5\MigrationTool\Batch\Formatter\ObjectCollection\Expres
 use PortlandLabs\Concrete5\MigrationTool\Batch\BatchInterface;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\ObjectCollection;
 use Doctrine\ORM\Mapping as ORM;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\ExpressEntry\Validator;
 
 use PortlandLabs\Concrete5\MigrationTool\Batch\Formatter\ExpressEntry\TreeJsonFormatter;
 /**

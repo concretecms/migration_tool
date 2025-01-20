@@ -3,7 +3,6 @@ namespace PortlandLabs\Concrete5\MigrationTool\Publisher\AttributeKey;
 
 use Concrete\Core\Attribute\Key\Key as CoreAttributeKey;
 use Concrete\Core\Entity\Attribute\Key\Settings\SelectSettings;
-use Concrete\Core\Entity\Attribute\Key\Type\SelectType;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\AttributeKey\SelectAttributeKey;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\AttributeKey\AttributeKey;
 
