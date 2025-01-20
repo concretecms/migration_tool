@@ -5,6 +5,7 @@ namespace PortlandLabs\Concrete5\MigrationTool\Batch\Command;
 use Concrete\Core\Application\Application;
 use Concrete\Core\Command\Batch\Batch as BatchBuilder;
 use Concrete\Core\Command\Process\ProcessFactory;
+use Concrete\Core\User\User;
 use Doctrine\ORM\EntityManager;
 use PortlandLabs\Concrete5\MigrationTool\Batch\BatchService;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch;
@@ -55,11 +56,8 @@ class PublishBatchCommandHandler
         $r = $this->entityManager->getRepository(Batch::class);
         $batch = $r->findOneById($command->getBatchId());
 
-        $u = new \User();
-        $user = null;
-        if ($u->isRegistered()) {
-            $user = $u->getUserInfoObject()->getEntityObject();
-        }
+        $u = $this->app->make(User::class);
+        $user = $u->isRegistered() ? $u->getUserInfoObject()->getEntityObject() : null;
 
         $this->batchService->createImportNode($batch->getSite());
         $this->logger->openLog($batch, $user);
