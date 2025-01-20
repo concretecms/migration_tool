@@ -5,7 +5,6 @@ use PortlandLabs\Concrete5\MigrationTool\Entity\Import\Attribute;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\AttributeKey\ExpressAttributeKeyCategoryInstance;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\Express\Control;
-use PortlandLabs\Concrete5\MigrationTool\Entity\Import\Express\EntityAttribute;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\Express\EntityObjectCollection;
 use PortlandLabs\Concrete5\MigrationTool\Importer\CIF\ElementParserInterface;
 use PortlandLabs\Concrete5\MigrationTool\Importer\CIF\Express\Control\Manager;

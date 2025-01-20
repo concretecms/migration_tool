@@ -2,7 +2,6 @@
 namespace PortlandLabs\Concrete5\MigrationTool\Batch\Object\Validator\Objecvt;
 
 use Concrete\Core\User\Group\Group;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\AbstractValidator;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Message;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\ValidatorInterface;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\ValidatorResult;

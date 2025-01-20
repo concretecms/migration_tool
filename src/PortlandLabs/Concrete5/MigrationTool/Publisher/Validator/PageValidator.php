@@ -6,7 +6,6 @@ use PortlandLabs\Concrete5\MigrationTool\Entity\ContentMapper\IgnoredTargetItem;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page;
 use PortlandLabs\Concrete5\MigrationTool\Publisher\PublishableInterface;
 use PortlandLabs\Concrete5\MigrationTool\Publisher\Routine\CreatePageStructureRoutine;
-use PortlandLabs\Concrete5\MigrationTool\Publisher\Routine\CreatePageStructureRoutineAction;
 
 class PageValidator extends AbstractValidator
 {
