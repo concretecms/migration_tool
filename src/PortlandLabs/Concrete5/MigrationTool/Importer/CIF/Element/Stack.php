@@ -55,9 +55,9 @@ class Stack implements ElementParserInterface
             foreach ($element->stacks->children() as $node) {
                 $stack = $this->parseStack($node);
                 $stack->setPosition($position);
-                if ($node->area->blocks->block) {
+                if (isset($node->area->blocks->block)) {
                     $blocks = $node->area->blocks->block;
-                } elseif ($node->area->block) { // 5.6
+                } elseif (isset($node->area->block)) { // 5.6
                     $blocks = $node->area->block;
                 }
                 if (isset($blocks)) {
