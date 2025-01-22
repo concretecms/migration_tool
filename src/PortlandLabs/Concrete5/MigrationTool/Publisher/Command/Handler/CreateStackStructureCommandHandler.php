@@ -2,86 +2,106 @@
 namespace PortlandLabs\Concrete5\MigrationTool\Publisher\Command\Handler;
 
 use Concrete\Core\Page\Stack\Stack;
+use Doctrine\ORM\EntityManagerInterface;
 use PortlandLabs\Concrete5\MigrationTool\Batch\BatchInterface;
-use PortlandLabs\Concrete5\MigrationTool\Entity\Import\ObjectCollection;
-use PortlandLabs\Concrete5\MigrationTool\Publisher\Command\CreateStackStructureCommand;
+use PortlandLabs\Concrete5\MigrationTool\Entity\Import\AbstractStack;
+use PortlandLabs\Concrete5\MigrationTool\Entity\Import\GlobalArea as ImportGlobalArea;
+use PortlandLabs\Concrete5\MigrationTool\Entity\Import\StackFolder as ImportFolder;
+use PortlandLabs\Concrete5\MigrationTool\Entity\Import\Stack as ImportStack;
 use PortlandLabs\Concrete5\MigrationTool\Publisher\Logger\LoggerInterface;
+use PortlandLabs\Concrete5\MigrationTool\Publisher\Service\StackTrait;
+use Concrete\Core\Page\Stack\Folder\Folder;
+
 
 defined('C5_EXECUTE') or die("Access Denied.");
 
+/**
+ * @property \PortlandLabs\Concrete5\MigrationTool\Publisher\Command\CreateStackStructureCommand $command
+ */
 class CreateStackStructureCommandHandler extends AbstractPageCommandHandler
 {
+    use StackTrait;
 
+    /**
+     * {@inheritdoc}
+     *
+     * @see \PortlandLabs\Concrete5\MigrationTool\Publisher\Command\Handler\AbstractPageCommandHandler::getPage()
+     *
+     * @return \PortlandLabs\Concrete5\MigrationTool\Entity\Import\AbstractStack|null
+     */
     public function getPage($id)
     {
-        $entityManager = \Database::connection()->getEntityManager();
-        $r = $entityManager->getRepository('\PortlandLabs\Concrete5\MigrationTool\Entity\Import\AbstractStack');
-        return $r->findOneById($id);
+        $em = app(EntityManagerInterface::class);
+
+        return $em->find(AbstractStack::class, $id);
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * @see \PortlandLabs\Concrete5\MigrationTool\Publisher\Command\Handler\AbstractHandler::execute()
+     */
     public function execute(BatchInterface $batch, LoggerInterface $logger)
     {
-        $parent = null;
-        /**
-         * @var $command CreateStackStructureCommand
-         */
-        $command = $this->command;
-        $stack = $this->getPage($command->getPageId());
+        $stack = $this->getPage($this->command->getPageId());
         $logger->logPublishStarted($stack);
-        if ($stack->getPath() || $stack->getName()) {
-            if ($stack->getPath() != '') {
-                $lastSlash = strrpos($stack->getPath(), '/');
-                $parentPath = substr($stack->getPath(), 0, $lastSlash);
-                if ($parentPath) {
-                    $parent = \Concrete\Core\Support\Facade\StackFolder::getByPath($parentPath, 'RECENT', $batch->getSite()->getSiteTreeObject());
-                }
-            }
-
-            switch ($stack->getType()) {
-                case 'folder':
-                    $folder = \Concrete\Core\Support\Facade\StackFolder::getByPath($stack->getName(), $batch->getSite()->getSiteTreeObject());
-                    if (!is_object($folder)) {
-                        $folder = \Concrete\Core\Support\Facade\StackFolder::add($stack->getName(), $parent);
-                        $logger->logPublishComplete($stack, $folder);
-                    } else {
-                        $logger->logSkipped($stack);
-                    }
-                    break;
-                case 'global_area':
-                    $s = Stack::getByName($stack->getName(), 'RECENT', $batch->getSite()->getSiteTreeObject());
-                    if (!is_object($s)) {
-                        if (method_exists('\Concrete\Core\Page\Stack\Stack', 'addGlobalArea')) {
-                            $s = Stack::addGlobalArea($stack->getName(), $batch->getSite()->getSiteTreeObject());
-                            $logger->logPublishComplete($stack, $s);
-                        } else {
-                            //legacy
-                            $s = Stack::addStack($stack->getName(), 'global_area');
-                            $logger->logPublishComplete($stack, $s);
-                        }
-                    }
-                    break;
-                default:
-                    //stack
-                    if (method_exists('\Concrete\Core\Page\Stack\Stack', 'getByPath') && $stack->getPath()) {
-                        $s = Stack::getByPath($stack->getPath(), 'RECENT', $batch->getSite()->getSiteTreeObject());
-                        if (!is_object($s)) {
-                            $s = Stack::addStack($stack->getName(), $parent);
-                            $logger->logPublishComplete($stack, $s);
-                        } else {
-                            $logger->logSkipped($stack);
-                        }
-                    } else {
-                        $s = Stack::getByName($stack->getName(), 'RECENT', $batch->getSite()->getSiteTreeObject());
-                        if (!is_object($s)) {
-                            // legacy, so no folder support
-                            $s = Stack::addStack($stack->getName());
-                            $logger->logPublishComplete($stack, $s);
-                        } else {
-                            $logger->logSkipped($stack);
-                        }
-                    }
-                    break;
-            }
+        if ($stack instanceof ImportFolder) {
+            $new = $this->importFolder($stack, $batch);
+        } elseif ($stack instanceof ImportGlobalArea) {
+            $new = $this->importGlobalArea($stack, $batch);
+        } elseif ($stack instanceof ImportStack) {
+            $new = $this->importStack($stack, $batch);
+        } else {
+            $new = null;
         }
+        if ($new === null) {
+            $logger->logSkipped($stack);
+        } else {
+            $logger->logPublishComplete($stack, $new);
+        }
+    }
+
+    private function importFolder(ImportFolder $folder, BatchInterface $batch): ?Folder
+    {
+        $name = (string) $folder->getName();
+        if ($name === '') {
+            return null;
+        }
+        $path = '/' . trim($folder->getPath() ?? '', '/');
+        $folderPath = rtrim($path, '/') . '/' . $name;
+        $existingFolders = $this->getExistingFolders();
+        if (array_key_exists($folderPath, $existingFolders)) {
+            return null;
+        }
+        $parentFolder = $this->getOrCreateFolderByPath($path);
+
+        return $this->createFolder($name, $folderPath, $parentFolder);
+    }
+
+    private function importGlobalArea(ImportGlobalArea $globalArea, BatchInterface $batch): ?Stack
+    {
+        $name = (string) $globalArea->getName();
+        if ($name === '') {
+            return null;
+        }
+        if (Stack::getByName($name, 'RECENT', $batch->getSite())) {
+            return null;
+        }
+
+        return Stack::addGlobalArea($name, $batch->getSite());
+    }
+
+    private function importStack(ImportStack $stack, BatchInterface $batch): ?Stack
+    {
+        $name = (string) $stack->getName();
+        if ($name === '') {
+            return null;
+        }
+        $parent = $this->getOrCreateFolderByPath($stack->getPath() ?? '');
+        if ($this->getStackIDByName($name, $parent) !== null) {
+            return null;
+        }
+
+        return Stack::addStack($name, $parent);
     }
 }
