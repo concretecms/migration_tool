@@ -1,3 +1,5 @@
+/node_modules/
+
 # ignore system files
 .DS_Store
 .idea
@@ -6,6 +8,3 @@ __MACOSX
 ._*
 .*swp
 .*swo
-/web
-package-lock.json
-node_modules
