@@ -257,7 +257,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @return mixed
+     * @return \PortlandLabs\Concrete5\MigrationTool\Entity\Import\PageObjectCollection
      */
     public function getCollection()
     {
@@ -265,7 +265,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @param mixed $collection
+     * @param \PortlandLabs\Concrete5\MigrationTool\Entity\Import\PageObjectCollection $collection
      */
     public function setCollection($collection)
     {
