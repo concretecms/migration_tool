@@ -3,7 +3,6 @@ namespace PortlandLabs\Concrete5\MigrationTool\Entity\Import;
 
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
-use PortlandLabs\Concrete5\MigrationTool\Batch\ContentMapper\Item\Item;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Attribute\ValidatableAttributesInterface;
 use PortlandLabs\Concrete5\MigrationTool\Publisher\Logger\LoggableInterface;
 use PortlandLabs\Concrete5\MigrationTool\Publisher\PublishableInterface;
@@ -193,7 +192,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
     public function getOriginalPath()
     {
@@ -201,7 +200,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @param mixed $path
+     * @param string|null $path
      */
     public function setOriginalPath($path)
     {
@@ -217,7 +216,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @param mixed $batch_path
+     * @param string|null $batch_path
      */
     public function setBatchPath($batch_path)
     {
@@ -225,7 +224,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
     public function getFilename()
     {
@@ -233,7 +232,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @param mixed $filename
+     * @param string|null $filename
      */
     public function setFilename($filename)
     {
@@ -241,7 +240,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getPublicDate()
     {
@@ -249,7 +248,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @param mixed $public_date
+     * @param string $public_date
      */
     public function setPublicDate($public_date)
     {
@@ -273,7 +272,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getType()
     {
@@ -281,7 +280,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @param mixed $type
+     * @param string $type
      */
     public function setType($type)
     {
@@ -289,7 +288,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getTemplate()
     {
@@ -297,7 +296,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @param mixed $template
+     * @param string $template
      */
     public function setTemplate($template)
     {
@@ -305,7 +304,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getName()
     {
@@ -313,7 +312,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @param mixed $name
+     * @param string $name
      */
     public function setName($name)
     {
@@ -321,7 +320,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getUser()
     {
@@ -329,7 +328,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @param mixed $user
+     * @param string $user
      */
     public function setUser($user)
     {
@@ -337,7 +336,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getDescription()
     {
@@ -345,7 +344,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @param mixed $description
+     * @param string $description
      */
     public function setDescription($description)
     {
@@ -353,7 +352,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @return mixed
+     * @return int
      */
     public function getPosition()
     {
@@ -361,7 +360,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @param mixed $position
+     * @param int $position
      */
     public function setPosition($position)
     {
@@ -369,7 +368,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @return mixed
+     * @return \Doctrine\Common\Collections\Collection<\PortlandLabs\Concrete5\MigrationTool\Entity\Import\PageAttribute>
      */
     public function getAttributes()
     {
@@ -377,20 +376,25 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @param mixed $attributes
+     * @param \Doctrine\Common\Collections\Collection<\PortlandLabs\Concrete5\MigrationTool\Entity\Import\PageAttribute> $attributes
      */
     public function setAttributes($attributes)
     {
         $this->attributes = $attributes;
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * @see \PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Attribute\ValidatableAttributesInterface::getAttributeValidatorDriver()
+     */
     public function getAttributeValidatorDriver()
     {
         return 'page_attribute';
     }
 
     /**
-     * @return mixed
+     * @return \Doctrine\Common\Collections\Collection<\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Area>
      */
     public function getAreas()
     {
@@ -398,20 +402,25 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @param mixed $areas
+     * @param \Doctrine\Common\Collections\Collection<\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Area> $areas
      */
     public function setAreas($areas)
     {
         $this->areas = $areas;
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * @see \PortlandLabs\Concrete5\MigrationTool\Publisher\PublishableInterface::getPublisherValidator()
+     */
     public function getPublisherValidator()
     {
         return new PageValidator($this);
     }
 
     /**
-     * @return mixed
+     * @return bool
      */
     public function getIsAtRoot()
     {
@@ -419,7 +428,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @param mixed $is_at_root
+     * @param bool $is_at_root
      */
     public function setIsAtRoot($is_at_root)
     {
@@ -427,7 +436,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
     public function getPackage()
     {
@@ -435,7 +444,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @param mixed $package
+     * @param string|null $package
      */
     public function setPackage($package)
     {
@@ -443,7 +452,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @return mixed
+     * @return bool
      */
     public function getIsGlobal()
     {
@@ -451,7 +460,7 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
     }
 
     /**
-     * @param mixed $is_global
+     * @param bool $is_global
      */
     public function setIsGlobal($is_global)
     {
@@ -557,6 +566,11 @@ class Page implements PublishableInterface, ValidatableAttributesInterface, Logg
         return $this->additionalPaths;
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * @see \PortlandLabs\Concrete5\MigrationTool\Publisher\Logger\LoggableInterface::createPublisherLogObject()
+     */
     public function createPublisherLogObject($publishedObject = null)
     {
         $object = new \PortlandLabs\Concrete5\MigrationTool\Entity\Publisher\Log\Object\Page();
