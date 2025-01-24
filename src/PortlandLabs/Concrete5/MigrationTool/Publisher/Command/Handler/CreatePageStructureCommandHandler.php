@@ -2,17 +2,18 @@
 
 namespace PortlandLabs\Concrete5\MigrationTool\Publisher\Command\Handler;
 
+use Concrete\Core\Entity\Page\PagePath;
+use Concrete\Core\Error\UserMessageException;
+use Concrete\Core\Package\PackageService;
 use Concrete\Core\Page\Page as CCMPage;
+use Concrete\Core\Page\Type\Type;
 use Concrete\Core\Utility\Service\Text;
 use Doctrine\ORM\EntityManagerInterface;
 use PortlandLabs\Concrete5\MigrationTool\Batch\BatchInterface;
-use PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page as MTPage;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch;
-use PortlandLabs\Concrete5\MigrationTool\Publisher\Logger\LoggerInterface;
-use Concrete\Core\Package\PackageService;
+use PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page as MTPage;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\PageObjectCollection;
-use Concrete\Core\Error\UserMessageException;
-use Concrete\Core\Page\Type\Type;
+use PortlandLabs\Concrete5\MigrationTool\Publisher\Logger\LoggerInterface;
 
 defined('C5_EXECUTE') or die('Access Denied.');
 
@@ -41,31 +42,34 @@ class CreatePageStructureCommandHandler extends AbstractPageCommandHandler
 
     private function publishPage(BatchInterface $batch, LoggerInterface $logger, MTPage $mtPage): CCMPage
     {
-        $already = $this->getPageByPath($batch, $mtPage->getBatchPath());
-        if ($already && !$already->isError()) {
-            return $already;
+        $ccmPage = $this->getPageByPath($batch, $mtPage->getBatchPath());
+        if ($ccmPage === null) {
+            $logger->logPublishStarted($mtPage);
+            $ccmParentPage = $this->getParentPage($batch, $logger, $mtPage);
+            switch ($mtPage->getKind()) {
+                case MTPage::KIND_ALIAS:
+                    $ccmPage = $this->createAliasPage($batch, $logger, $ccmParentPage, $mtPage);
+                    break;
+                case MTPage::KIND_EXTERNAL_LINK:
+                    $ccmPage = $this->createExternalLink($batch, $ccmParentPage, $mtPage);
+                    break;
+                case MTPage::KIND_REGULAR_PAGE:
+                default:
+                    $ccmPage = $this->createRegularPage($batch, $ccmParentPage, $mtPage);
+                    break;
+            }
+            $logger->logPublishComplete($mtPage, $ccmPage);
         }
-        $logger->logPublishStarted($mtPage);
-        $ccmParentPage = $this->getParentPage($batch, $logger, $mtPage);
-        switch ($mtPage->getKind()) {
-            case MTPage::KIND_ALIAS:
-                $ccmPage = $this->publishAliasPage($batch, $logger, $ccmParentPage, $mtPage);
-                break;
-            case MTPage::KIND_EXTERNAL_LINK:
-                $ccmPage = $this->publishExternalLink($batch, $ccmParentPage, $mtPage);
-                break;
-            case MTPage::KIND_REGULAR_PAGE:
-            default:
-                $ccmPage = $this->publishRegularPage($batch, $ccmParentPage, $mtPage);
-                break;
-        }
-        $logger->logPublishComplete($mtPage, $ccmPage);
+        $this->setAdditionalPaths($mtPage, $ccmPage);
 
         return $ccmPage;
     }
 
-    private function publishRegularPage(BatchInterface $batch, CCMPage $ccmParentPage, MTPage $mtPage): CCMPage
+    private function createRegularPage(BatchInterface $batch, ?CCMPage $ccmParentPage, MTPage $mtPage): CCMPage
     {
+        if ($ccmParentPage === null) {
+            throw new UserMessageException(t('Unable to find the home page of the website'));
+        }
         $slugs = preg_split('{/}', (string) $mtPage->getBatchPath(), -1, PREG_SPLIT_NO_EMPTY);
         $data = [
             'uID' => $this->getUserID($batch, $mtPage->getUser()),
@@ -93,9 +97,27 @@ class CreatePageStructureCommandHandler extends AbstractPageCommandHandler
         }
         return $ccmParentPage->add($type, $data);
     }
-    
-    private function publishAliasPage(BatchInterface $batch, LoggerInterface $logger, CCMPage $ccmParentPage, MTPage $mtPage): CCMPage
+
+    private function setAdditionalPaths(MTPage $mtPage, CCMPage $ccmPage): void
     {
+        $em = app(EntityManagerInterface::class);
+        foreach ($ccmPage->getAdditionalPagePaths() as $ccmPagePath) {
+            $em->remove($ccmPagePath);
+        }
+        foreach ($mtPage->getAdditionalPaths() as $mtAdditionalPath) {
+            $ccmPagePath = new PagePath();
+            $ccmPagePath->setPageObject($ccmPage);
+            $ccmPagePath->setPagePath('/' . trim($mtAdditionalPath->getPath(), '/'));
+            $em->persist($ccmPagePath);
+        }
+        $em->flush();
+    }
+    
+    private function createAliasPage(BatchInterface $batch, LoggerInterface $logger, ?CCMPage $ccmParentPage, MTPage $mtPage): CCMPage
+    {
+        if ($ccmParentPage === null) {
+            throw new UserMessageException(t("The website home page can't be an alias"));
+        }
         $slugs = preg_split('{/}', (string) $mtPage->getBatchPath(), -1, PREG_SPLIT_NO_EMPTY);
         $cHandle = array_pop($slugs);
         if ($cHandle === null) {
@@ -111,8 +133,11 @@ class CreatePageStructureCommandHandler extends AbstractPageCommandHandler
         return $alias;
     }
 
-    private function publishExternalLink(BatchInterface $batch, CCMPage $ccmParentPage, MTPage $mtPage): CCMPage
+    private function createExternalLink(BatchInterface $batch, ?CCMPage $ccmParentPage, MTPage $mtPage): CCMPage
     {
+        if ($ccmParentPage === null) {
+            throw new UserMessageException(t("The website home page can't be an external link"));
+        }
         $slugs = preg_split('{/}', (string) $mtPage->getBatchPath(), -1, PREG_SPLIT_NO_EMPTY);
         $cHandle = array_pop($slugs);
         if ($cHandle === null) {
@@ -138,12 +163,18 @@ class CreatePageStructureCommandHandler extends AbstractPageCommandHandler
         return $ui ? (int) $ui->getUserID() : (int) USER_SUPER_ID;
     }
 
-    private function getParentPage(BatchInterface $batch, LoggerInterface $logger, MTPage $childPage): CCMPage
+    /**
+     * @return \Concrete\Core\Page\Page|null returns NULL if and only if $mtPage is the website actual root page 
+     */
+    private function getParentPage(BatchInterface $batch, LoggerInterface $logger, MTPage $mtPage): ?CCMPage
     {
-        $slugs = preg_split('{/}', (string) $childPage->getBatchPath(), -1, PREG_SPLIT_NO_EMPTY);
+        $slugs = preg_split('{/}', (string) $mtPage->getBatchPath(), -1, PREG_SPLIT_NO_EMPTY);
+        if ($slugs === []) {
+            return null;
+        }
         array_pop($slugs);
 
-        return $this->getOrCreatePageByPath($batch, $logger, $childPage->getCollection(), implode('/', $slugs));
+        return $this->getOrCreatePageByPath($batch, $logger, $mtPage->getCollection(), implode('/', $slugs));
     }
 
     /**
