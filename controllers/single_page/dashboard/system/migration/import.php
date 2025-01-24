@@ -291,12 +291,11 @@ class Import extends DashboardPageController
 
     public function view()
     {
-        $r = $this->entityManager->getRepository('\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch');
-        $batches = $r->findAll(array(), array('date' => 'desc'));
-        $this->set('batches', $batches);
         $this->set('batchType', 'import');
+        $r = $this->entityManager->getRepository(\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch::class);
+        $this->set('batches', $r->findAll([], ['date' => 'desc']));
         $this->set('sites', $this->app->make('site')->getList());
-        $this->set('batchEmptyMessage', t('You have not created any import batches. Create a batch and add content records to it.'));
+        $this->set('dh', $this->app->make('helper/date'));
         $this->render('/dashboard/system/migration/view_batches');
     }
 

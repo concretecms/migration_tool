@@ -55,12 +55,11 @@ class Export extends DashboardSitePageController
 
     public function view()
     {
-        $r = $this->entityManager->getRepository('\PortlandLabs\Concrete5\MigrationTool\Entity\Export\Batch');
-        $batches = $r->findAll(array(), array('date' => 'desc'));
-        $this->set('batches', $batches);
         $this->set('batchType', 'export');
+        $r = $this->entityManager->getRepository(\PortlandLabs\Concrete5\MigrationTool\Entity\Export\Batch::class);
+        $this->set('batches', $r->findAll([], ['date' => 'desc']));
         $this->set('sites', $this->app->make('site')->getList());
-        $this->set('batchEmptyMessage', t('You have not created any export batches.'));
+        $this->set('dh', $this->app->make('helper/date'));
         $this->render('/dashboard/system/migration/view_batches');
     }
 
