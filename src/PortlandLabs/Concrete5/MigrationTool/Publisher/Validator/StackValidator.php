@@ -56,7 +56,7 @@ class StackValidator extends AbstractValidator
             $c = $localizedStack;
         }
 
-        $blocks = $c->getBlocks();
+        $blocks = $c->getBlockIDs();
         if (count($blocks)) {
             return true;
         }
