@@ -41,6 +41,11 @@ class Batch implements BatchInterface
     protected $file_folder_id = 0;
 
     /**
+     * @ORM\Column(type="boolean", nullable=false)
+     */
+    protected $publishToSitemap = true;
+
+    /**
      * @ORM\ManyToMany(targetEntity="ObjectCollection", cascade={"persist", "remove"}))
      * @ORM\JoinTable(name="MigrationImportBatchObjectCollections",
      *      joinColumns={@ORM\JoinColumn(name="batch_id", referencedColumnName="id", onDelete="CASCADE")},
@@ -227,7 +232,21 @@ class Batch implements BatchInterface
         $this->file_folder_id = $file_folder_id;
     }
 
+    public function isPublishToSitemap(): bool
+    {
+        return $this->publishToSitemap;
+    }
 
+    /**
+     * @return $this
+     */
+    public function setPublishToSitemap(bool $value): self
+    {
+        $this->publishToSitemap = $value;
+
+        return $this;
+    }
+    
     /**
      * @param mixed $target_items
      */

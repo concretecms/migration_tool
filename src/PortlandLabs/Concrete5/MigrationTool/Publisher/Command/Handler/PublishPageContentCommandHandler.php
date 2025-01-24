@@ -3,109 +3,117 @@ namespace PortlandLabs\Concrete5\MigrationTool\Publisher\Command\Handler;
 
 use Concrete\Core\Page\Type\Composer\FormLayoutSetControl;
 use PortlandLabs\Concrete5\MigrationTool\Batch\BatchInterface;
-use PortlandLabs\Concrete5\MigrationTool\Publisher\Command\PublishPageContentCommand;
 use PortlandLabs\Concrete5\MigrationTool\Publisher\Logger\LoggerInterface;
+use Doctrine\ORM\EntityManagerInterface;
 
 defined('C5_EXECUTE') or die("Access Denied.");
 
+/**
+ * @property \PortlandLabs\Concrete5\MigrationTool\Publisher\Command\PublishPageContentCommand $command
+ */
 class PublishPageContentCommandHandler extends AbstractPageCommandHandler
 {
     public function execute(BatchInterface $batch, LoggerInterface $logger)
     {
-        /**
-         * @var $command PublishPageContentCommand
-         */
-        $command = $this->command;
-
-        $page = $this->getPage($command->getPageId());
-        $concretePage = $this->getPageByPath($batch, $page->getBatchPath());
-
-        foreach ($page->attributes as $attribute) {
-            $ak = $this->getTargetItem($batch, 'page_attribute', $attribute->getAttribute()->getHandle());
+        $mtPage = $this->getPage($this->command->getPageId());
+        $ccmPage = $this->getPageByPath($batch, $mtPage->getBatchPath());
+        foreach ($mtPage->getAttributes() as $mtAttribute) {
+            $ak = $this->getTargetItem($batch, 'page_attribute', $mtAttribute->getAttribute()->getHandle());
             if (is_object($ak)) {
-                $logger->logPublishStarted($attribute);
-                $value = $attribute->getAttribute()->getAttributeValue();
+                $logger->logPublishStarted($mtAttribute);
+                $value = $mtAttribute->getAttribute()->getAttributeValue();
                 $publisher = $value->getPublisher();
-                $publisher->publish($batch, $ak, $concretePage, $value);
-                $logger->logPublishComplete($attribute);
+                $publisher->publish($batch, $ak, $ccmPage, $value);
+                $logger->logPublishComplete($mtAttribute);
             }
         }
-
-        $em = \Package::getByHandle('migration_tool')->getEntityManager();
-        $r = $em->getRepository('\PortlandLabs\Concrete5\MigrationTool\Entity\ContentMapper\TargetItem');
-        $controls = $r->findBy(array('item_type' => 'composer_output_content'));
-        $controlHandles = array_map(function ($a) {
-            return $a->getItemID();
-        }, $controls);
-        $blockSubstitutes = array();
+        $em = app(EntityManagerInterface::class);
+        $repo = $em->getRepository(\PortlandLabs\Concrete5\MigrationTool\Entity\ContentMapper\TargetItem::class);
+        $controls = $repo->findBy(['item_type' => 'composer_output_content']);
+        $controlHandles = array_map(static function ($a) { return $a->getItemID(); }, $controls);
+        $blockSubstitutes = [];
         // Now we have our $controls array which we will use to determine if any of the blocks on this page
         // need to be replaced by another block.
 
-        foreach ($page->areas as $area) {
-            $areaName = $this->getTargetItem($batch, 'area', $area->getName());
-            $styleSet = $area->getStyleSet();
-            if ($areaName) {
-                if (is_object($styleSet)) {
-                    $styleSetPublisher = $styleSet->getPublisher();
-                    $publishedStyleSet = $styleSetPublisher->publish();
-                    $concreteArea = \Area::getOrCreate($concretePage, $areaName);
-                    $concretePage->setCustomStyleSet($concreteArea, $publishedStyleSet);
+        foreach ($mtPage->getAreas() as $mtArea) {
+            $areaName = (string) $this->getTargetItem($batch, 'area', $mtArea->getName());
+            if ($areaName === '') {
+                continue;
+            }
+            $mtStyleSet = $mtArea->getStyleSet();
+            if (is_object($mtStyleSet)) {
+                $styleSetPublisher = $mtStyleSet->getPublisher();
+                $publishedStyleSet = $styleSetPublisher->publish();
+                $ccmArea = \Concrete\Core\Area\Area::getOrCreate($ccmPage, $areaName);
+                $ccmPage->setCustomStyleSet($ccmArea, $publishedStyleSet);
+            }
+            foreach ($mtArea->getBlocks() as $mtBlock) {
+                $blockType = $this->getTargetItem($batch, 'block_type', $mtBlock->getType());
+                if (!is_object($blockType)) {
+                    continue;
                 }
-                foreach ($area->blocks as $block) {
-                    $bt = $this->getTargetItem($batch, 'block_type', $block->getType());
-                    if (is_object($bt)) {
-                        $logger->logPublishStarted($block);
-                        $value = $block->getBlockValue();
-                        $publisher = $value->getPublisher();
-                        $b = $publisher->publish($batch, $bt, $concretePage, $areaName, $value);
-                        $logger->logPublishComplete($block, $b);
-                        /*
-                        $styleSet = $block->getStyleSet();
-                        if (is_object($styleSet)) {
-                            $styleSetPublisher = $styleSet->getPublisher();
-                            $publishedStyleSet = $styleSetPublisher->publish();
-                            $b->setCustomStyleSet($publishedStyleSet);
-                        }
-                        if ($block->getCustomTemplate()) {
-                            $b->setCustomTemplate($block->getCustomTemplate());
-                        }
-
-                        if (in_array($bt->getBlockTypeHandle(), $controlHandles)) {
-                            $blockSubstitutes[$bt->getBlockTypeHandle()] = $b;
-                        }
-                        */
+                $logger->logPublishStarted($mtBlock);
+                $value = $mtBlock->getBlockValue();
+                $publisher = $value->getPublisher();
+                $ccmBlock = $publisher->publish($batch, $blockType, $ccmPage, $areaName, $value);
+                if (!is_object($ccmBlock)) {
+                    $ccmBlock = null;
+                }
+                if ($ccmBlock !== null) {
+                    $styleSet = $mtBlock->getStyleSet();
+                    if (is_object($styleSet)) {
+                        $styleSetPublisher = $styleSet->getPublisher();
+                        $publishedStyleSet = $styleSetPublisher->publish();
+                        $ccmBlock->setCustomStyleSet($publishedStyleSet);
+                    }
+                    $customTemplate = (string) $mtBlock->getCustomTemplate();
+                    if ($customTemplate !== '') {
+                        $ccmBlock->setCustomTemplate($customTemplate);
+                    }
+                    if (in_array($blockType->getBlockTypeHandle(), $controlHandles)) {
+                        $blockSubstitutes[$blockType->getBlockTypeHandle()] = $ccmBlock;
                     }
                 }
+                $logger->logPublishComplete($mtBlock, $ccmBlock);
             }
         }
 
         // Loop through all the blocks on the page. If any of them are composer output content blocks
         // We look in our composer mapping.
-        foreach ($concretePage->getBlocks() as $b) {
-            if ($b->getBlockTypeHandle() == BLOCK_HANDLE_PAGE_TYPE_OUTPUT_PROXY) {
-                foreach ($controls as $targetItem) {
-                    if ($targetItem->isMapped() && intval($targetItem->getSourceItemIdentifier()) == intval($b->getBlockID())) {
-                        $substitute = $blockSubstitutes[$targetItem->getItemID()];
-                        if ($substitute) {
-                            // We move the substitute to where the proxy block was.
-                            $blockDisplayOrder = $b->getBlockDisplayOrder();
-                            $substitute->setAbsoluteBlockDisplayOrder($blockDisplayOrder);
-                            $control = $b->getController()->getComposerOutputControlObject();
-                            if (is_object($control)) {
-                                $control = FormLayoutSetControl::getByID($control->getPageTypeComposerFormLayoutSetControlID());
-                                if (is_object($control)) {
-                                    $blockControl = $control->getPageTypeComposerControlObject();
-                                    if (is_object($blockControl)) {
-                                        $blockControl->recordPageTypeComposerOutputBlock($substitute);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                // we delete the proxy block
-                $b->deleteBlock();
+        foreach ($ccmPage->getBlocks() as $ccmBlock) {
+            if ($ccmBlock->getBlockTypeHandle() !== BLOCK_HANDLE_PAGE_TYPE_OUTPUT_PROXY) {
+                continue;
             }
+            foreach ($controls as $targetItem) {
+                if (!$targetItem->isMapped()) {
+                    continue;
+                }
+                if ((int) $targetItem->getSourceItemIdentifier() != (int) $ccmBlock->getBlockID()) {
+                    continue;
+                }
+                $substitute = $blockSubstitutes[$targetItem->getItemID()] ?? null;
+                if (!$substitute) {
+                    continue;
+                }
+                // We move the substitute to where the proxy block was.
+                $blockDisplayOrder = $ccmBlock->getBlockDisplayOrder();
+                $substitute->setAbsoluteBlockDisplayOrder($blockDisplayOrder);
+                $control = $ccmBlock->getController()->getComposerOutputControlObject();
+                if (!is_object($control)) {
+                    continue;
+                }
+                $control = FormLayoutSetControl::getByID($control->getPageTypeComposerFormLayoutSetControlID());
+                if (!is_object($control)) {
+                    continue;
+                }
+                $blockControl = $control->getPageTypeComposerControlObject();
+                if (!is_object($blockControl)) {
+                    continue;
+                }
+                $blockControl->recordPageTypeComposerOutputBlock($substitute);
+            }
+            // we delete the proxy block
+            $ccmBlock->deleteBlock();
         }
     }
 }

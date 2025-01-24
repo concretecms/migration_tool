@@ -12,7 +12,6 @@ defined('C5_EXECUTE') or die('Access Denied.');
  * @var Concrete\Core\Entity\Site\Site[] $sites
  * @var Concrete\Core\Localization\Service\Date $dh
  */
-output_vars(get_defined_vars());
 ?>
 <div class="ccm-dashboard-header-buttons">
     <a href="javascript:void(0)" data-dialog="add-batch" class="btn btn-primary"><?= t('Add Batch') ?></a>
@@ -57,10 +56,6 @@ if ($batches !== []) {
     <div id="ccm-dialog-add-batch" class="ccm-ui">
         <form method="post" action="<?= $view->action('add_batch') ?>" enctype="multipart/form-data">
             <?= $token->output('add_batch') ?>
-            <div class="form-group">
-                <?= $form->label('date', t('Date')) ?>
-                <?= $form->text('date', $dh->formatDateTime('now', true), ['disabled' => 'disabled']) ?>
-            </div>
             <?php
             if (count($sites) > 1) {
                 ?>
@@ -85,15 +80,19 @@ if ($batches !== []) {
             </div>
 
             <?php
-            if ($batchType == 'import') {
-                ?>
-                <fieldset>
-                    <legend><?= t('Advanced') ?></legend>
-                    <div class="form-group">
-                        <?= $form->label('mappingFile', t('Provide Mapping Presets')) ?>
-                        <?= $form->file('mappingFile') ?>
-                    </div>
-                </fieldset>
+            switch ($batchType) {
+                case 'import':
+                    ?>
+                    <fieldset>
+                        <legend><?= t('Advanced') ?></legend>
+                        <div class="form-group">
+                            <?= $form->label('mappingFile', t('Provide Mapping Presets')) ?>
+                            <?= $form->file('mappingFile') ?>
+                        </div>
+                        <?php
+                        View::element('import/batch/publish_to_sitemap', ['batch' => null, 'form' => $form], 'migration_tool')
+                        ?>
+                    </fieldset>
                 <?php
             }
             ?>
@@ -111,7 +110,7 @@ $(function() {
         jQuery.fn.dialog.open({
             element: '#ccm-dialog-add-batch',
             modal: true,
-            width: 320,
+            width: <?= $batchType === 'import' ? '600' : '320' ?>,
             title: <?=json_encode(t('Add Batch')) ?>,
             height: 'auto',
         });

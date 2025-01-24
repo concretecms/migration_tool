@@ -39,7 +39,11 @@ class Import extends DashboardPageController
             if ($this->request->request->has('siteID')) {
                 $site = $this->app->make('site')->getByID($this->request->request->get('siteID'));
             }
-            $batch = $service->addBatch($this->request->request->get('name'), $site);
+            $batch = $service->addBatch(
+                $this->request->request->get('name'),
+                $site,
+                $this->request->request->getBoolean('publishToSitemap', false)
+            );
             if ($_FILES['mappingFile']['tmp_name']) {
                 $importer = new \PortlandLabs\Concrete5\MigrationTool\Batch\ContentMapper\Importer();
                 $mappings = $importer->getMappings($_FILES['mappingFile']['tmp_name']);

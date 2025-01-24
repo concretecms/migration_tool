@@ -27,7 +27,7 @@ class PublishStackContentCommandHandler extends AbstractPageCommandHandler
      *
      * @return \PortlandLabs\Concrete5\MigrationTool\Entity\Import\AbstractStack|null
      */
-    public function getPage($id)
+    public function getPage(?string $id): ?object
     {
         $em = app(EntityManagerInterface::class);
 
