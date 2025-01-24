@@ -3,12 +3,9 @@ namespace PortlandLabs\Concrete5\MigrationTool\Publisher\Command\Handler;
 
 use Concrete\Core\Page\Type\Type;
 use Concrete\Core\Utility\Service\Text;
+use Doctrine\ORM\EntityManagerInterface;
 use PortlandLabs\Concrete5\MigrationTool\Batch\BatchInterface;
-use PortlandLabs\Concrete5\MigrationTool\Batch\ContentMapper\Item\Item;
-use PortlandLabs\Concrete5\MigrationTool\Batch\ContentMapper\MapperManagerInterface;
 use PortlandLabs\Concrete5\MigrationTool\Batch\ContentMapper\TargetItemList;
-use PortlandLabs\Concrete5\MigrationTool\Entity\ContentMapper\IgnoredTargetItem;
-use PortlandLabs\Concrete5\MigrationTool\Entity\ContentMapper\UnmappedTargetItem;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page;
 
@@ -19,7 +16,9 @@ abstract class AbstractPageCommandHandler extends AbstractHandler
 
     protected function getPageByPath(Batch $batch, $path)
     {
-        return \Page::getByPath('/!import_batches/' . $batch->getID() . $path,
+        $path = trim((string) $path, '/');
+        return \Page::getByPath(
+            '/!import_batches/' . $batch->getID() . ($path === '' ? '' : "/{$path}"),
             'RECENT',
             $batch->getSite()->getSiteTreeObject()
         );
@@ -30,9 +29,9 @@ abstract class AbstractPageCommandHandler extends AbstractHandler
      */
     public function getPage($id)
     {
-        $entityManager = \Database::connection()->getEntityManager();
-        $r = $entityManager->getRepository('\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page');
-        return $r->findOneById($id);
+        $entityManager = app(EntityManagerInterface::class);
+
+        return $entityManager->find(\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page::class, $id);
     }
 
     protected function ensureParentPageExists(Batch $batch, Page $page)

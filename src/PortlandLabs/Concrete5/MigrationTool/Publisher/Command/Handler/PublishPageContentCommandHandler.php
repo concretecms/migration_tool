@@ -59,6 +59,7 @@ class PublishPageContentCommandHandler extends AbstractPageCommandHandler
                         $publisher = $value->getPublisher();
                         $b = $publisher->publish($batch, $bt, $concretePage, $areaName, $value);
                         $logger->logPublishComplete($block, $b);
+                        /*
                         $styleSet = $block->getStyleSet();
                         if (is_object($styleSet)) {
                             $styleSetPublisher = $styleSet->getPublisher();
@@ -72,6 +73,7 @@ class PublishPageContentCommandHandler extends AbstractPageCommandHandler
                         if (in_array($bt->getBlockTypeHandle(), $controlHandles)) {
                             $blockSubstitutes[$bt->getBlockTypeHandle()] = $b;
                         }
+                        */
                     }
                 }
             }

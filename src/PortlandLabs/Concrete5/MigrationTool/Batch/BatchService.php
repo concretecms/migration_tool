@@ -58,8 +58,7 @@ class BatchService
 
     public function createImportNode(Site $site)
     {
-        $batches = \Page::getByPath('/!import_batches', 'RECENT', $site->getSiteTreeObject()
-        );
+        $batches = \Page::getByPath('/!import_batches', 'RECENT', $site->getSiteTreeObject());
         if (!is_object($batches) || $batches->isError()) {
             $c = Single::add('/!import_batches', \Package::getByHandle('migration_tool'), true);
             $c->update(array('cName' => 'Import Batches'));
