@@ -4,6 +4,7 @@ namespace PortlandLabs\Concrete5\MigrationTool\Publisher\Command\Handler;
 
 use Concrete\Core\Entity\Page\PagePath;
 use Concrete\Core\Error\UserMessageException;
+use Concrete\Core\Localization\Locale\Service as LocaleService;
 use Concrete\Core\Package\PackageService;
 use Concrete\Core\Page\Page as CCMPage;
 use Concrete\Core\Page\Type\Type;
@@ -14,6 +15,7 @@ use PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page as MTPage;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\PageObjectCollection;
 use PortlandLabs\Concrete5\MigrationTool\Publisher\Logger\LoggerInterface;
+use Concrete\Core\Multilingual\Service\Detector;
 
 defined('C5_EXECUTE') or die('Access Denied.');
 
@@ -40,10 +42,12 @@ class CreatePageStructureCommandHandler extends AbstractPageCommandHandler
         $this->publishPage($batch, $logger, $mtPage);
     }
 
-    private function publishPage(BatchInterface $batch, LoggerInterface $logger, MTPage $mtPage): CCMPage
+    private function publishPage(Batch $batch, LoggerInterface $logger, MTPage $mtPage): CCMPage
     {
         $ccmPage = $this->getPageByPath($batch, $mtPage->getBatchPath());
-        if ($ccmPage === null) {
+        if ($ccmPage !== null) {
+            $this->updateExistingPage($batch, $mtPage, $ccmPage);
+        } else {
             $logger->logPublishStarted($mtPage);
             $ccmParentPage = $this->getParentPage($batch, $logger, $mtPage);
             switch ($mtPage->getKind()) {
@@ -65,37 +69,51 @@ class CreatePageStructureCommandHandler extends AbstractPageCommandHandler
         return $ccmPage;
     }
 
-    private function createRegularPage(BatchInterface $batch, ?CCMPage $ccmParentPage, MTPage $mtPage): CCMPage
+    private function createRegularPage(Batch $batch, ?CCMPage $ccmParentPage, MTPage $mtPage): CCMPage
     {
         if ($ccmParentPage === null) {
             throw new UserMessageException(t('Unable to find the home page of the website'));
         }
         $slugs = preg_split('{/}', (string) $mtPage->getBatchPath(), -1, PREG_SPLIT_NO_EMPTY);
+        $pageType = null;
+        $pageTemplate = null;
         $data = [
             'uID' => $this->getUserID($batch, $mtPage->getUser()),
-            'name' => $mtPage->getName(),
+            'name' => $mtPage->getName() ?: null,
             'cDescription' => $mtPage->getDescription(),
             'cHandle' => array_pop($slugs) ?? '',
+            'cDatePublic' => $mtPage->getPublicDate() ?: null,
+            'ptID' => $this->getPageTypeID($batch, $mtPage->getType(), $pageType),
+            'pTemplateID' => $this->getPageTemplateID($batch, $mtPage->getTemplate(), $pageTemplate),
+            'pkgID' => $this->getPackageID($batch, $mtPage->getPackage()),
         ];
-        $cDatePublic = $mtPage->getPublicDate();
-        if ($cDatePublic) {
-            $data['cDatePublic'] = $cDatePublic;
+        $localeInfo = $mtPage->getLocaleRoot();
+        if ($localeInfo === null || $batch->isPublishToSitemap() !== true || $this->localeAlreadyExists($batch, $localeInfo)) {
+            return $ccmParentPage->add($pageType, $data);
         }
-        $type = $this->getTargetItem($batch, 'page_type', $mtPage->getType());
-        if ($type) {
-            $data['ptID'] = $type->getPageTypeID();
+        if (!$pageTemplate) {
+            throw new UserMessageException(t('Missing page template when creating the home of a language'));
         }
-        $template = $this->getTargetItem($batch, 'page_template', $mtPage->getTemplate());
-        if (is_object($template)) {
-            $data['pTemplateID'] = $template->getPageTemplateID();
+        $app = app();
+        $detector = $app->make('multilingual/detector');
+        if (method_exists($detector, 'assumeEnabled')) {
+            $detector->assumeEnabled();
+        } else {
+            $app->forgetInstance('multilingual/detector');
+            $app->forgetInstance(Detector::class);
         }
-        if ($mtPage->getPackage()) {
-            $pkg = app(PackageService::class)->getByHandle($mtPage->getPackage());
-            if ($pkg) {
-                $data['pkgID'] = $pkg->getPackageID();
-            }
-        }
-        return $ccmParentPage->add($type, $data);
+        $service = $app->make(LocaleService::class);
+        $locale = $service->add($batch->getSite(), $localeInfo['language'], $localeInfo['country']);
+        $page = $service->addHomePage($locale, $pageTemplate, $data['name'] ?? 'Home', $data['cHandle']);
+        $page->update([
+            'cDescription' => $data['cDescription'],
+            'cDatePublic' => $data['$cDatePublic'],
+            'ptID' => $data['ptID'],
+            'uID' => $data['uID'],
+            'pkgID' => $data['pkgID'],
+        ]);
+
+        return $page;
     }
 
     private function setAdditionalPaths(MTPage $mtPage, CCMPage $ccmPage): void
@@ -112,8 +130,8 @@ class CreatePageStructureCommandHandler extends AbstractPageCommandHandler
         }
         $em->flush();
     }
-    
-    private function createAliasPage(BatchInterface $batch, LoggerInterface $logger, ?CCMPage $ccmParentPage, MTPage $mtPage): CCMPage
+
+    private function createAliasPage(Batch $batch, LoggerInterface $logger, ?CCMPage $ccmParentPage, MTPage $mtPage): CCMPage
     {
         if ($ccmParentPage === null) {
             throw new UserMessageException(t("The website home page can't be an alias"));
@@ -133,7 +151,7 @@ class CreatePageStructureCommandHandler extends AbstractPageCommandHandler
         return $alias;
     }
 
-    private function createExternalLink(BatchInterface $batch, ?CCMPage $ccmParentPage, MTPage $mtPage): CCMPage
+    private function createExternalLink(Batch $batch, ?CCMPage $ccmParentPage, MTPage $mtPage): CCMPage
     {
         if ($ccmParentPage === null) {
             throw new UserMessageException(t("The website home page can't be an external link"));
@@ -156,17 +174,50 @@ class CreatePageStructureCommandHandler extends AbstractPageCommandHandler
         return $ccmPage;
     }
 
-    private function getUserID(BatchInterface $batch, ?string $userName): int
+    private function getUserID(Batch $batch, ?string $userName): int
     {
         $ui = $this->getTargetItem($batch, 'user', $userName);
 
         return $ui ? (int) $ui->getUserID() : (int) USER_SUPER_ID;
     }
 
+    private function getPageTemplateID(Batch $batch, ?string $handle, &$pageTemplate = null): ?int
+    {
+        $pageTemplate = $this->getTargetItem($batch, 'page_template', $handle) ?: null;
+        if (!$pageTemplate) {
+            return null;
+        }
+
+        return (int) $pageTemplate->getPageTemplateID() ?: null;
+    }
+
+    private function getPackageID(Batch $batch, ?string $handle): ?int
+    {
+        if ($handle === null || $handle === '') {
+            return null;
+        }
+        $pkg = app(PackageService::class)->getByHandle($handle);
+        if (!$pkg) {
+            return null;
+        }
+
+        return (int) $pkg->getPackageID() ?: null;
+    }
+
+    private function getPageTypeID(Batch $batch, ?string $handle, &$pageType = null): ?int
+    {
+        $pageType = $this->getTargetItem($batch, 'page_type', $handle) ?: null;
+        if (!$pageType) {
+            return null;
+        }
+
+        return (int) $pageType->getPageTypeID() ?: null;
+    }
+
     /**
-     * @return \Concrete\Core\Page\Page|null returns NULL if and only if $mtPage is the website actual root page 
+     * @return \Concrete\Core\Page\Page|null returns NULL if and only if $mtPage is the website actual root page
      */
-    private function getParentPage(BatchInterface $batch, LoggerInterface $logger, MTPage $mtPage): ?CCMPage
+    private function getParentPage(Batch $batch, LoggerInterface $logger, MTPage $mtPage): ?CCMPage
     {
         $slugs = preg_split('{/}', (string) $mtPage->getBatchPath(), -1, PREG_SPLIT_NO_EMPTY);
         if ($slugs === []) {
@@ -182,7 +233,7 @@ class CreatePageStructureCommandHandler extends AbstractPageCommandHandler
      *
      * @see \PortlandLabs\Concrete5\MigrationTool\Publisher\Command\Handler\AbstractPageCommandHandler::getPageByPath()
      */
-    private function getOrCreatePageByPath(BatchInterface $batch, LoggerInterface $logger, PageObjectCollection $collection, string $path): CCMPage
+    private function getOrCreatePageByPath(Batch $batch, LoggerInterface $logger, PageObjectCollection $collection, string $path): CCMPage
     {
         $root = $this->getBatchParentPage($batch);
         $slugs = preg_split('{/}', $path, -1, PREG_SPLIT_NO_EMPTY);
@@ -235,12 +286,70 @@ class CreatePageStructureCommandHandler extends AbstractPageCommandHandler
                     $type,
                     [
                         'cName' => $batch->getID(),
-                        'pkgID' => app(PackageService::class)->getByHandle('migration_tool')->getPackageID(),
+                        'pkgID' => $this->getPackageID($batch, 'migration_tool'),
                     ]
                 );
             }
         }
 
         return $this->batchParentPage;
+    }
+
+    private function updateExistingPage(Batch $batch, MTPage $mtPage, CCMPage $ccmPage): void
+    {
+        switch ($mtPage->getKind()) {
+            case MTPage::KIND_ALIAS:
+                break;
+            case MTPage::KIND_EXTERNAL_LINK:
+                break;
+            case MTPage::KIND_REGULAR_PAGE:
+            default:
+                $ccmPage->update([
+                    'cName' => $mtPage->getName() ?: null,
+                    'cDescription' => $mtPage->getDescription(),
+                    'cDatePublic' => $mtPage->getPublicDate() ?: null,
+                    'ptID' =>  $this->getPageTypeID($batch, $mtPage->getType()),
+                    'pTemplateID' => $this->getPageTemplateID($batch, $mtPage->getTemplate()),
+                    'uID' => $this->getUserID($batch, $mtPage->getUser()),
+                    'pkgID' => $this->getPackageID($batch, $mtPage->getPackage()),
+                ]);
+                $this->updateExistingLocale($batch, $ccmPage, $mtPage->getLocaleRoot());
+                break;
+        }
+    }
+
+    private function updateExistingLocale(Batch $batch, CCMPage $ccmPage, ?array $localeInfo): void
+    {
+        if ($localeInfo === null || $batch->isPublishToSitemap() !== true) {
+            return;
+        }
+        $pageTree = $ccmPage->getSiteTreeObject();
+        if (!$pageTree || $pageTree->getSiteHomePageID() != $ccmPage->getCollectionID()) {
+            return;
+        }
+        $editingLocale = $pageTree->getLocale();
+        if ($editingLocale->getLanguage() === $localeInfo['language'] && $editingLocale->getCountry() === $localeInfo['country']) {
+            return;
+        }
+        if ($this->localeAlreadyExists($batch, $localeInfo)) {
+            return;
+        }
+        $editingLocale->setLanguage($localeInfo['language']);
+        $editingLocale->setCountry($localeInfo['country']);
+        $service = app(LocaleService::class);
+        $service->updatePluralSettings($editingLocale);
+        $em = app(EntityManagerInterface::class);
+        $em->flush();
+    }
+
+    private function localeAlreadyExists(Batch $batch, array $localeInfo): bool
+    {
+        foreach ($batch->getSite()->getLocales() as $locale) {
+            if ($locale->getLanguage() === $localeInfo['language'] && $locale->getCountry() === $localeInfo['country']) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
