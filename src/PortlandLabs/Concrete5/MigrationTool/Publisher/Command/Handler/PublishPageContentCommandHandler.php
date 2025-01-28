@@ -1,10 +1,14 @@
 <?php
 namespace PortlandLabs\Concrete5\MigrationTool\Publisher\Command\Handler;
 
+use Concrete\Core\Multilingual\Page\Section\Section;
+use Concrete\Core\Page\Page as CCMPage;
 use Concrete\Core\Page\Type\Composer\FormLayoutSetControl;
-use PortlandLabs\Concrete5\MigrationTool\Batch\BatchInterface;
-use PortlandLabs\Concrete5\MigrationTool\Publisher\Logger\LoggerInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use PortlandLabs\Concrete5\MigrationTool\Batch\BatchInterface;
+use PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch;
+use PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page as MTPage;
+use PortlandLabs\Concrete5\MigrationTool\Publisher\Logger\LoggerInterface;
 
 defined('C5_EXECUTE') or die("Access Denied.");
 
@@ -16,7 +20,13 @@ class PublishPageContentCommandHandler extends AbstractPageCommandHandler
     public function execute(BatchInterface $batch, LoggerInterface $logger)
     {
         $mtPage = $this->getPage($this->command->getPageId());
+        switch ($mtPage->getKind()) {
+            case MTPage::KIND_ALIAS:
+            case MTPage::KIND_EXTERNAL_LINK:
+                return;
+        }
         $ccmPage = $this->getPageByPath($batch, $mtPage->getBatchPath());
+        $this->publishHRefLangs($batch, $mtPage, $ccmPage);
         foreach ($mtPage->getAttributes() as $mtAttribute) {
             $ak = $this->getTargetItem($batch, 'page_attribute', $mtAttribute->getAttribute()->getHandle());
             if (is_object($ak)) {
@@ -114,6 +124,33 @@ class PublishPageContentCommandHandler extends AbstractPageCommandHandler
             }
             // we delete the proxy block
             $ccmBlock->deleteBlock();
+        }
+    }
+
+    private function publishHRefLangs(Batch $batch, MTPage $mtPage, CCMPage $ccmPage): void
+    {
+        if ($batch->isPublishToSitemap() !== true) {
+            return;
+        }
+        foreach ($mtPage->getHRefLangs() as $hrefLang) {
+            $destinationPage = $this->getPageByPath($batch, $hrefLang->getPathForLocale());
+            if ($destinationPage === null || $destinationPage->getCollectionID() == $ccmPage->getCollectionID()) {
+                continue;
+            }
+            $destinationSection = Section::getByID($destinationPage->getCollectionID());
+            if (!$destinationSection || $destinationSection->isError()) {
+                $destinationSection = Section::getBySectionOfSite($destinationPage);
+                if (!$destinationSection || $destinationSection->isError()) {
+                    continue;
+                }
+            }
+            if ($destinationSection->getLocale() !== $hrefLang->getLocaleID()) {
+                continue;
+            }
+            if (!Section::isAssigned($ccmPage)) {
+                Section::registerPage($ccmPage);
+            }
+            Section::relatePage($ccmPage, $destinationPage, $destinationSection->getLocale());
         }
     }
 }

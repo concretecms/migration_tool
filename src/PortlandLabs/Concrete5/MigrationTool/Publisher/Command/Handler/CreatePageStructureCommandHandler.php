@@ -62,9 +62,9 @@ class CreatePageStructureCommandHandler extends AbstractPageCommandHandler
                     $ccmPage = $this->createRegularPage($batch, $ccmParentPage, $mtPage);
                     break;
             }
+            $this->setAdditionalPaths($mtPage, $ccmPage);
             $logger->logPublishComplete($mtPage, $ccmPage);
         }
-        $this->setAdditionalPaths($mtPage, $ccmPage);
 
         return $ccmPage;
     }
@@ -107,7 +107,7 @@ class CreatePageStructureCommandHandler extends AbstractPageCommandHandler
         $page = $service->addHomePage($locale, $pageTemplate, $data['name'] ?? 'Home', $data['cHandle']);
         $page->update([
             'cDescription' => $data['cDescription'],
-            'cDatePublic' => $data['$cDatePublic'],
+            'cDatePublic' => $data['cDatePublic'],
             'ptID' => $data['ptID'],
             'uID' => $data['uID'],
             'pkgID' => $data['pkgID'],
@@ -297,6 +297,7 @@ class CreatePageStructureCommandHandler extends AbstractPageCommandHandler
 
     private function updateExistingPage(Batch $batch, MTPage $mtPage, CCMPage $ccmPage): void
     {
+        $this->setAdditionalPaths($mtPage, $ccmPage);
         switch ($mtPage->getKind()) {
             case MTPage::KIND_ALIAS:
                 break;
