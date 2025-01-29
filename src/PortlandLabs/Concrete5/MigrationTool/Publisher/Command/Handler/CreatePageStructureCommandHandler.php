@@ -95,9 +95,8 @@ class CreatePageStructureCommandHandler extends AbstractPageCommandHandler
             throw new UserMessageException(t('Missing page template when creating the home of a language'));
         }
         $app = app();
-        $detector = $app->make('multilingual/detector');
-        if (method_exists($detector, 'assumeEnabled')) {
-            $detector->assumeEnabled();
+        if (method_exists(Detector::class, 'assumeEnabled')) {
+            $app->make('multilingual/detector')->assumeEnabled();
         } else {
             $app->forgetInstance('multilingual/detector');
             $app->forgetInstance(Detector::class);
