@@ -52,6 +52,11 @@ abstract class AbstractStack implements PublishableInterface, LoggableInterface
     protected $name;
 
     /**
+     * @ORM\Column(type="string", length=20, nullable=false)
+     */
+    protected $localeID = '';
+
+    /**
      * @ORM\Column(type="integer")
      */
     protected $position;
@@ -121,7 +126,7 @@ abstract class AbstractStack implements PublishableInterface, LoggableInterface
     }
 
     /**
-     * @return mixed
+     * @return \Doctrine\Common\Collections\Collection<\PortlandLabs\Concrete5\MigrationTool\Entity\Import\StackBlock>
      */
     public function getBlocks()
     {

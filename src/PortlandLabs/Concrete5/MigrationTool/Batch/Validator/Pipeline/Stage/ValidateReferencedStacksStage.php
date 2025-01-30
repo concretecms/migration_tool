@@ -3,7 +3,6 @@ namespace PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Pipeline\Stage;
 
 use Concrete\Core\Backup\ContentImporter\ValueInspector\Item\StackItem;
 use League\Pipeline\StageInterface;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\BatchObjectCollectionValidatorSubject;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Page\Content\StackItemValidator;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\ValidatorResult;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\BlockValue\StackDisplayBlockValue;

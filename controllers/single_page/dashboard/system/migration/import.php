@@ -4,19 +4,13 @@ namespace Concrete\Package\MigrationTool\Controller\SinglePage\Dashboard\System\
 use Concrete\Core\File\Filesystem;
 use Concrete\Core\File\Importer;
 use Concrete\Core\File\Set\Set;
-use Concrete\Core\Command\Batch\Batch as BatchBuilder;
-use Concrete\Core\Filesystem\ElementManager;
 use Concrete\Core\Page\PageList;
 use Concrete\Package\MigrationTool\Page\Controller\DashboardPageController;
 use Doctrine\Common\Collections\ArrayCollection;
 use PortlandLabs\Concrete5\MigrationTool\Batch\BatchService;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Command\DeleteBatchProcessesCommand;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Command\MapContentTypesBatchProcessFactory;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Command\MapContentTypesCommand;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Command\NormalizePagePathsCommand;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Command\PublishBatchCommand;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Command\ScanContentTypesCommand;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Command\TransformContentTypesBatchProcessFactory;
 use PortlandLabs\Concrete5\MigrationTool\Batch\ContentMapper\PresetManager;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Formatter\ExpressEntry\TreeEntryJsonFormatter;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Formatter\Page\TreePageJsonFormatter;
@@ -45,7 +39,11 @@ class Import extends DashboardPageController
             if ($this->request->request->has('siteID')) {
                 $site = $this->app->make('site')->getByID($this->request->request->get('siteID'));
             }
-            $batch = $service->addBatch($this->request->request->get('name'), $site);
+            $batch = $service->addBatch(
+                $this->request->request->get('name'),
+                $site,
+                $this->request->request->getBoolean('publishToSitemap', false)
+            );
             if ($_FILES['mappingFile']['tmp_name']) {
                 $importer = new \PortlandLabs\Concrete5\MigrationTool\Batch\ContentMapper\Importer();
                 $mappings = $importer->getMappings($_FILES['mappingFile']['tmp_name']);
@@ -297,12 +295,11 @@ class Import extends DashboardPageController
 
     public function view()
     {
-        $r = $this->entityManager->getRepository('\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch');
-        $batches = $r->findAll(array(), array('date' => 'desc'));
-        $this->set('batches', $batches);
         $this->set('batchType', 'import');
+        $r = $this->entityManager->getRepository(\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch::class);
+        $this->set('batches', $r->findAll([], ['date' => 'desc']));
         $this->set('sites', $this->app->make('site')->getList());
-        $this->set('batchEmptyMessage', t('You have not created any import batches. Create a batch and add content records to it.'));
+        $this->set('dh', $this->app->make('helper/date'));
         $this->render('/dashboard/system/migration/view_batches');
     }
 
@@ -337,7 +334,6 @@ class Import extends DashboardPageController
                     $settings[] = $setting;
                 }
             }
-            $service = $this->app->make(BatchService::class);
             if ($batch->getBatchProcesses()->count()) {
                 $processes = [];
                 foreach($batch->getBatchProcesses() as $batchProcess) {

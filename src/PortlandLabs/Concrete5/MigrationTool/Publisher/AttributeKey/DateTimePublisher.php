@@ -2,7 +2,6 @@
 namespace PortlandLabs\Concrete5\MigrationTool\Publisher\AttributeKey;
 
 use Concrete\Core\Entity\Attribute\Key\Settings\DateTimeSettings;
-use Concrete\Core\Entity\Attribute\Key\Type\DateTimeType;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\AttributeKey\DateTimeAttributeKey;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\AttributeKey\AttributeKey;
 
