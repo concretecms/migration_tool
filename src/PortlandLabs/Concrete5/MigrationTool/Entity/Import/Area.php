@@ -38,7 +38,7 @@ class Area
     protected $name;
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getId()
     {
@@ -46,7 +46,7 @@ class Area
     }
 
     /**
-     * @return mixed
+     * @return \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page
      */
     public function getPage()
     {
@@ -54,7 +54,7 @@ class Area
     }
 
     /**
-     * @param mixed $page
+     * @param \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page $page
      */
     public function setPage($page)
     {
@@ -62,7 +62,7 @@ class Area
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getName()
     {
@@ -70,7 +70,7 @@ class Area
     }
 
     /**
-     * @param mixed $name
+     * @param string $name
      */
     public function setName($name)
     {
@@ -83,7 +83,7 @@ class Area
     }
 
     /**
-     * @return mixed
+     * @return \Doctrine\Common\Collections\ArrayCollection<\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Block>
      */
     public function getBlocks()
     {
@@ -91,7 +91,7 @@ class Area
     }
 
     /**
-     * @param mixed $blocks
+     * @param \Doctrine\Common\Collections\ArrayCollection<\PortlandLabs\Concrete5\MigrationTool\Entity\Import\Block> $blocks
      */
     public function setBlocks($blocks)
     {
@@ -99,7 +99,7 @@ class Area
     }
 
     /**
-     * @return mixed
+     * @return \PortlandLabs\Concrete5\MigrationTool\Entity\Import\StyleSet|null
      */
     public function getStyleSet()
     {
@@ -107,7 +107,7 @@ class Area
     }
 
     /**
-     * @param mixed $style_set
+     * @param \PortlandLabs\Concrete5\MigrationTool\Entity\Import\StyleSet|null $style_set
      */
     public function setStyleSet($style_set)
     {

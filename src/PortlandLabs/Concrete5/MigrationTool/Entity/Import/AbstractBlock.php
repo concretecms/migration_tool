@@ -53,7 +53,12 @@ class AbstractBlock implements LoggableInterface
     protected $area;
 
     /**
-     * @return mixed
+     * @ORM\Column(type="string", nullable=true)
+     */
+    protected $defaults_output_identifier = null;
+
+    /**
+     * @return string
      */
     public function getId()
     {
@@ -61,7 +66,7 @@ class AbstractBlock implements LoggableInterface
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
     public function getType()
     {
@@ -69,7 +74,7 @@ class AbstractBlock implements LoggableInterface
     }
 
     /**
-     * @param mixed $type
+     * @param string|null $type
      */
     public function setType($type)
     {
@@ -77,7 +82,7 @@ class AbstractBlock implements LoggableInterface
     }
 
     /**
-     * @return mixed
+     * @return \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Area
      */
     public function getArea()
     {
@@ -85,7 +90,7 @@ class AbstractBlock implements LoggableInterface
     }
 
     /**
-     * @param mixed $area
+     * @param \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Area $area
      */
     public function setArea($area)
     {
@@ -93,7 +98,7 @@ class AbstractBlock implements LoggableInterface
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
     public function getName()
     {
@@ -101,7 +106,7 @@ class AbstractBlock implements LoggableInterface
     }
 
     /**
-     * @param mixed $name
+     * @param string|null $name
      */
     public function setName($name)
     {
@@ -109,7 +114,7 @@ class AbstractBlock implements LoggableInterface
     }
 
     /**
-     * @return mixed
+     * @return int
      */
     public function getPosition()
     {
@@ -117,7 +122,7 @@ class AbstractBlock implements LoggableInterface
     }
 
     /**
-     * @param mixed $position
+     * @param int $position
      */
     public function setPosition($position)
     {
@@ -125,7 +130,7 @@ class AbstractBlock implements LoggableInterface
     }
 
     /**
-     * @return mixed
+     * @return \PortlandLabs\Concrete5\MigrationTool\Entity\Import\BlockValue\BlockValue|null
      */
     public function getBlockValue()
     {
@@ -133,7 +138,7 @@ class AbstractBlock implements LoggableInterface
     }
 
     /**
-     * @param mixed $block_value
+     * @param \PortlandLabs\Concrete5\MigrationTool\Entity\Import\BlockValue\BlockValue|null $block_value
      */
     public function setBlockValue($block_value)
     {
@@ -141,12 +146,7 @@ class AbstractBlock implements LoggableInterface
     }
 
     /**
-     * @ORM\Column(type="string", nullable=true)
-     */
-    protected $defaults_output_identifier = null;
-
-    /**
-     * @return mixed
+     * @return string|null
      */
     public function getDefaultsOutputIdentifier()
     {
@@ -154,7 +154,7 @@ class AbstractBlock implements LoggableInterface
     }
 
     /**
-     * @param mixed $defaults_output_identifier
+     * @param string|null $defaults_output_identifier
      */
     public function setDefaultsOutputIdentifier($defaults_output_identifier)
     {
@@ -162,7 +162,7 @@ class AbstractBlock implements LoggableInterface
     }
 
     /**
-     * @return mixed
+     * @return \PortlandLabs\Concrete5\MigrationTool\Entity\Import\StyleSet|null
      */
     public function getStyleSet()
     {
@@ -170,7 +170,7 @@ class AbstractBlock implements LoggableInterface
     }
 
     /**
-     * @param mixed $style_set
+     * @param \PortlandLabs\Concrete5\MigrationTool\Entity\Import\StyleSet|null $style_set
      */
     public function setStyleSet($style_set)
     {
@@ -178,7 +178,7 @@ class AbstractBlock implements LoggableInterface
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
     public function getCustomTemplate()
     {
@@ -186,13 +186,18 @@ class AbstractBlock implements LoggableInterface
     }
 
     /**
-     * @param mixed $custom_template
+     * @param string|null $custom_template
      */
     public function setCustomTemplate($custom_template)
     {
         $this->custom_template = $custom_template;
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * @see \PortlandLabs\Concrete5\MigrationTool\Publisher\Logger\LoggableInterface::createPublisherLogObject()
+     */
     public function createPublisherLogObject($publishedObject = null)
     {
         $object = new \PortlandLabs\Concrete5\MigrationTool\Entity\Publisher\Log\Object\Block();

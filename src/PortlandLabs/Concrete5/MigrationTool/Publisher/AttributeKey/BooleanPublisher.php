@@ -2,7 +2,6 @@
 namespace PortlandLabs\Concrete5\MigrationTool\Publisher\AttributeKey;
 
 use Concrete\Core\Entity\Attribute\Key\Settings\BooleanSettings;
-use Concrete\Core\Entity\Attribute\Key\Type\BooleanType;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\AttributeKey\BooleanAttributeKey;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\AttributeKey\AttributeKey;
 

@@ -17,7 +17,10 @@ class ValidateAreasStage implements StageInterface
         $subject = $result->getSubject();
         $batch = $subject->getBatch();
         $page = $subject->getObject();
-
+        /** @var \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page $page */
+        if (in_array($page->getKind(), [$page::KIND_ALIAS, $page::KIND_EXTERNAL_LINK], true)) {
+            return $result;
+        }
         $areaMapper = new Area();
         $targetItemList = new TargetItemList($batch, $areaMapper);
         foreach ($page->getAreas() as $area) {

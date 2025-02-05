@@ -3,6 +3,7 @@ namespace Concrete\Package\MigrationTool\Controller\SinglePage\Dashboard\System\
 
 use Concrete\Core\Application\EditResponse;
 use Concrete\Core\File\File;
+use Concrete\Core\Http\ResponseFactory;
 use Concrete\Core\Page\Controller\DashboardSitePageController;
 use Concrete\Package\MigrationTool\Page\Controller\DashboardPageController;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -54,12 +55,11 @@ class Export extends DashboardSitePageController
 
     public function view()
     {
-        $r = $this->entityManager->getRepository('\PortlandLabs\Concrete5\MigrationTool\Entity\Export\Batch');
-        $batches = $r->findAll(array(), array('date' => 'desc'));
-        $this->set('batches', $batches);
         $this->set('batchType', 'export');
+        $r = $this->entityManager->getRepository(\PortlandLabs\Concrete5\MigrationTool\Entity\Export\Batch::class);
+        $this->set('batches', $r->findAll([], ['date' => 'desc']));
         $this->set('sites', $this->app->make('site')->getList());
-        $this->set('batchEmptyMessage', t('You have not created any export batches.'));
+        $this->set('dh', $this->app->make('helper/date'));
         $this->render('/dashboard/system/migration/view_batches');
     }
 
@@ -80,16 +80,33 @@ class Export extends DashboardSitePageController
     {
         $r = $this->entityManager->getRepository('\PortlandLabs\Concrete5\MigrationTool\Entity\Export\Batch');
         $batch = $r->findOneById($id);
-        if (is_object($batch)) {
-            $exporter = new Exporter($batch);
-            $files = $exporter->getReferencedFiles();
-            $this->set('files', $files);
-            $this->set('batch', $batch);
-            $this->set('pageTitle', t('Export Batch'));
-            $this->render('/dashboard/system/migration/finalize_export_batch');
-        } else {
-            $this->view();
+        if ($batch === null) {
+            return $this->view();
         }
+        $this->set('batch', $batch);
+        $exporter = new Exporter($batch);
+        $files = $exporter->getReferencedFiles();
+        $this->set('files', $files);
+        $sx = $exporter->getElement();
+        $xml = $sx->saveXML();
+        try {
+            $doc = new \DOMDocument();
+            $doc->preserveWhiteSpace = false;
+            $doc->formatOutput = true;
+            $flags = 0 | (defined('LIBXML_BIGLINES') ? LIBXML_BIGLINES : 0);
+            $restore = libxml_use_internal_errors(true);
+            try {
+                if ($doc->loadXML($xml, $flags) !== false && !libxml_get_errors()) {
+                    $xml = $doc->saveXML();
+                }
+            } finally {
+                libxml_use_internal_errors($restore);
+            }
+        } catch (\Throwable $_) {
+        }
+        $this->set('xml', $xml);
+        $this->set('pageTitle', t('Export Batch'));
+        $this->render('/dashboard/system/migration/finalize_export_batch');
     }
 
     public function download_files()
@@ -149,25 +166,6 @@ class Export extends DashboardSitePageController
             $fh->forceDownload($filename);
         }
         exit;
-    }
-
-    public function export_batch_xml($id = null)
-    {
-        $r = $this->entityManager->getRepository('\PortlandLabs\Concrete5\MigrationTool\Entity\Export\Batch');
-        $batch = $r->findOneById($id);
-        if (is_object($batch)) {
-            $exporter = new Exporter($batch);
-            if ($this->request->request->get('download')) {
-                header('Content-disposition: attachment; filename="export.xml"');
-                header('Content-type: "text/xml"; charset="utf8"');
-            } else {
-                header('Content-type: text/xml');
-            }
-            echo $exporter->getElement()->asXML();
-            exit;
-        } else {
-            $this->view();
-        }
     }
 
     public function add_items_to_batch()

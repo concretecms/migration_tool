@@ -2,7 +2,6 @@
 namespace PortlandLabs\Concrete5\MigrationTool\Publisher\AttributeKey;
 
 use Concrete\Core\Entity\Attribute\Key\Settings\TextareaSettings;
-use Concrete\Core\Entity\Attribute\Key\Type\TextareaType;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\AttributeKey\TextAreaAttributeKey;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\AttributeKey\AttributeKey;
 

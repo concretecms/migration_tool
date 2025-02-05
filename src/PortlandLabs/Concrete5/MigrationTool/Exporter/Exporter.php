@@ -8,8 +8,14 @@ defined('C5_EXECUTE') or die("Access Denied.");
 
 class Exporter
 {
+    /**
+     * @var \PortlandLabs\Concrete5\MigrationTool\Entity\Export\Batch
+     */
     protected $batch;
-    protected $built = false;
+
+    /**
+     * @var \SimpleXMLElement|null
+     */
     protected $element;
 
     public function __construct(Batch $batch)
@@ -19,7 +25,7 @@ class Exporter
 
     protected function build()
     {
-        $this->element = new \SimpleXMLElement("<?xml version=\"1.0\" encoding=\"UTF-8\"?><concrete5-cif></concrete5-cif>");
+        $this->element = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><concrete5-cif />');
         $this->element->addAttribute('version', '1.0');
         foreach ($this->batch->getObjectCollections() as $collection) {
             $type = $collection->getItemTypeObject();
@@ -27,9 +33,12 @@ class Exporter
         }
     }
 
+    /**
+     * @return \SimpleXMLElement
+     */
     public function getElement()
     {
-        if (!$this->built) {
+        if (!$this->element) {
             $this->build();
         }
 
@@ -38,6 +47,8 @@ class Exporter
 
     /**
      * Loops through all pages and returns files referenced.
+     *
+     * @return \Concrete\Core\Entity\File\File[]
      */
     public function getReferencedFiles()
     {

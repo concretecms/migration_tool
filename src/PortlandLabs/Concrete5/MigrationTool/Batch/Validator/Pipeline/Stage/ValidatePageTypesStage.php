@@ -20,33 +20,37 @@ class ValidatePageTypesStage implements StageInterface
         $subject = $result->getSubject();
         $batch = $subject->getBatch();
         $page = $subject->getObject();
-
-        if ($page->getType()) {
-            $mapper = new PageType();
-            $targetItemList = new TargetItemList($batch, $mapper);
-            $item = new Item($page->getType());
-            $targetItem = $targetItemList->getSelectedTargetItem($item);
-            if (!($targetItem instanceof IgnoredTargetItem)) {
-                if ($targetItem instanceof UnmappedTargetItem) {
-                    $result->getMessages()->add(
-                        new Message(t('Page Type <strong>%s</strong> does not exist.', $item->getIdentifier()))
-                    );
-                } else {
-                    $targetPageType = Type::getByID($targetItem->getItemID());
-                    if (is_object($targetPageType)) {
-                        $composerMapper = new ComposerOutputContent();
-                        $composerTargetItemList = new TargetItemList($batch, $composerMapper);
-                        $items = $composerMapper->getPageTypeComposerOutputContentItems($targetPageType);
-                        foreach ($items as $item) {
-                            $targetItem = $composerTargetItemList->getSelectedTargetItem($item);
-                            if ($targetItem instanceof UnmappedTargetItem) {
-                                $result->getMessages()->add(
-                                    new Message(t('Mapped page type %s contains unmapped composer output block in %s area.',
-                                        $targetPageType->getPageTypeDisplayName(),
-                                        $item->getBlock()->getAreaHandle()
-                                    ))
-                                );
-                            }
+        /** @var \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page $page */
+        if (in_array($page->getKind(), [$page::KIND_ALIAS, $page::KIND_EXTERNAL_LINK], true)) {
+            return $result;
+        }
+        if (!$page->getType()) {
+            return $result;
+        }
+        $mapper = new PageType();
+        $targetItemList = new TargetItemList($batch, $mapper);
+        $item = new Item($page->getType());
+        $targetItem = $targetItemList->getSelectedTargetItem($item);
+        if (!($targetItem instanceof IgnoredTargetItem)) {
+            if ($targetItem instanceof UnmappedTargetItem) {
+                $result->getMessages()->add(
+                    new Message(t('Page Type <strong>%s</strong> does not exist.', $item->getIdentifier()))
+                );
+            } else {
+                $targetPageType = Type::getByID($targetItem->getItemID());
+                if (is_object($targetPageType)) {
+                    $composerMapper = new ComposerOutputContent();
+                    $composerTargetItemList = new TargetItemList($batch, $composerMapper);
+                    $items = $composerMapper->getPageTypeComposerOutputContentItems($targetPageType);
+                    foreach ($items as $item) {
+                        $targetItem = $composerTargetItemList->getSelectedTargetItem($item);
+                        if ($targetItem instanceof UnmappedTargetItem) {
+                            $result->getMessages()->add(
+                                new Message(t('Mapped page type %s contains unmapped composer output block in %s area.',
+                                    $targetPageType->getPageTypeDisplayName(),
+                                    $item->getBlock()->getAreaHandle()
+                                ))
+                            );
                         }
                     }
                 }
