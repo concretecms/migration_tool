@@ -80,16 +80,33 @@ class Export extends DashboardSitePageController
     {
         $r = $this->entityManager->getRepository('\PortlandLabs\Concrete5\MigrationTool\Entity\Export\Batch');
         $batch = $r->findOneById($id);
-        if (is_object($batch)) {
-            $exporter = new Exporter($batch);
-            $files = $exporter->getReferencedFiles();
-            $this->set('files', $files);
-            $this->set('batch', $batch);
-            $this->set('pageTitle', t('Export Batch'));
-            $this->render('/dashboard/system/migration/finalize_export_batch');
-        } else {
-            $this->view();
+        if ($batch === null) {
+            return $this->view();
         }
+        $this->set('batch', $batch);
+        $exporter = new Exporter($batch);
+        $files = $exporter->getReferencedFiles();
+        $this->set('files', $files);
+        $sx = $exporter->getElement();
+        $xml = $sx->saveXML();
+        try {
+            $doc = new \DOMDocument();
+            $doc->preserveWhiteSpace = false;
+            $doc->formatOutput = true;
+            $flags = 0 | (defined('LIBXML_BIGLINES') ? LIBXML_BIGLINES : 0);
+            $restore = libxml_use_internal_errors(true);
+            try {
+                if ($doc->loadXML($xml, $flags) !== false && !libxml_get_errors()) {
+                    $xml = $doc->saveXML();
+                }
+            } finally {
+                libxml_use_internal_errors($restore);
+            }
+        } catch (\Throwable $_) {
+        }
+        $this->set('xml', $xml);
+        $this->set('pageTitle', t('Export Batch'));
+        $this->render('/dashboard/system/migration/finalize_export_batch');
     }
 
     public function download_files()
@@ -149,28 +166,6 @@ class Export extends DashboardSitePageController
             $fh->forceDownload($filename);
         }
         exit;
-    }
-
-    public function export_batch_xml($id = null)
-    {
-        $r = $this->entityManager->getRepository('\PortlandLabs\Concrete5\MigrationTool\Entity\Export\Batch');
-        $batch = $r->findOneById($id);
-        if (is_object(!$batch)) {
-            return $this->view();
-        }
-        $headers = [
-            'Content-Type' => 'text/xml; charset=' . APP_CHARSET,
-        ];
-        if ($this->request->request->get('download')) {
-            $headers['Content-Disposition'] = 'attachment; filename="export.xml"';
-        }
-        $exporter = new Exporter($batch);
-
-        return $this->app->make(ResponseFactory::class)->create(
-            $exporter->getElement()->asXML(),
-            200,
-            $headers
-        );
     }
 
     public function add_items_to_batch()

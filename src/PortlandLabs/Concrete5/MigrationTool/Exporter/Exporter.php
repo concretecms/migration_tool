@@ -47,6 +47,8 @@ class Exporter
 
     /**
      * Loops through all pages and returns files referenced.
+     *
+     * @return \Concrete\Core\Entity\File\File[]
      */
     public function getReferencedFiles()
     {
