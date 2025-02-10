@@ -8,9 +8,12 @@ function MigrationBatchTableTree($table, options) {
         lazyLoad: false,
         columnKey: false,
         renderInitialColumnData: false,
+        postProcess: function(event, data) {
+        	my.postProcess(event, data);
+        },
         renderColumns: function(event, data) {
             my.renderColumns(event, data);
-        }
+        },
     }, options);
     my.$table = $table;
     my.options = options;
@@ -29,6 +32,7 @@ function MigrationBatchTableTree($table, options) {
             nodeColumnIdx: 0
         },
         lazyLoad: options.lazyLoad,
+        postProcess: options.postProcess,
         renderColumns: options.renderColumns,
         clickFolderMode: 2,
         focusOnSelect: false,
@@ -38,14 +42,21 @@ function MigrationBatchTableTree($table, options) {
     });
 }
 
+MigrationBatchTableTree.prototype.postProcess = function(event, data) {
+	if (data?.response?.forEach) {
+		data.response.forEach((item) => {
+			if (item.exists) {
+				item.extraClasses = 'migration-item-skipped' + (item.extraClasses ? (' ' + item.extraClasses) : '');
+			}
+		});
+	}
+};
+
 MigrationBatchTableTree.prototype.renderColumns = function(event, data) {
     var my = this,
         node = data.node,
         cells = $(node.tr).find(">td");
 
-    if (node.data.exists) {
-        $(node.tr).addClass('migration-item-skipped');
-    }
     if (node.data.nodetype == my.options.columnKey) {
         my.options.renderInitialColumnData(cells, data);
         cells.eq(cells.length - 1).html('<input data-checkbox="select-item" type="checkbox" name="item[' + my.options.columnKey + '][]" value="' + data.node.data.id + '">');

@@ -1,4 +1,4 @@
-let mix = require('laravel-mix');
+const mix = require('laravel-mix');
 
 mix.webpackConfig({
     externals: {
@@ -12,8 +12,8 @@ mix.setPublicPath('assets');
 // Build themes
 mix
     .sass('resources/scss/backend/backend.scss', 'css/backend.css')
-    .js('resources/js/backend.js', 'js/backend.js');
-
+    .js('resources/js/backend.js', 'js/backend.js')
+;
 
 // Turn off notifications
 mix
@@ -21,3 +21,4 @@ mix
     .options({
         clearConsole: false,
     })
+;
