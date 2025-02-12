@@ -1,5 +1,6 @@
-/tests/ export-ignore 
-/resources/ export-ignore 
+/.* export-ignore
+/tests/ export-ignore
+/resources/ export-ignore
 /package-lock.json export-ignore
 /package.json export-ignore
 /webpack.mix.js export-ignore 
