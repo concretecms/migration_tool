@@ -1,6 +1,7 @@
 <?php
 namespace PortlandLabs\Concrete5\MigrationTool\Publisher\Routine;
 
+use Closure;
 use PortlandLabs\Concrete5\MigrationTool\Batch\BatchInterface;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\ObjectCollection;
@@ -24,39 +25,34 @@ abstract class AbstractPageRoutine implements RoutineInterface
         return $collection->getPages();
     }
 
-    public function getPagesOrderedForImport(Batch $batch)
+    public function getPagesOrderedForImport(Batch $batch, ?Closure $customComparer = null): array
     {
         $collection = $this->getPageCollection($batch);
-
         if (!$collection) {
-            return array();
+            return [];
         }
-
-        $pages = array();
-        foreach ($this->getPages($collection) as $page) {
-            $pages[] = $page;
-        }
-        usort($pages, function ($pageA, $pageB) {
-            $pathA = (string) $pageA->getBatchPath();
-            $pathB = (string) $pageB->getBatchPath();
-            $numA = count(explode('/', $pathA));
-            $numB = count(explode('/', $pathB));
-            if ($numA == $numB) {
-                if (intval($pageA->getPosition()) < intval($pageB->getPosition())) {
-                    return -1;
-                } else {
-                    if (intval($pageA->getPosition()) > intval($pageB->getPosition())) {
-                        return 1;
-                    } else {
-                        return 0;
+        $pages = iterator_to_array($this->getPages($collection));
+        usort(
+            $pages,
+            static function ($a, $b) use ($customComparer): int {
+                if ($customComparer !== null) {
+                    $cmp = $customComparer($a, $b);
+                    if ($cmp) {
+                        return $cmp;
                     }
                 }
-            } else {
-                return ($numA < $numB) ? -1 : 1;
+                $pathA = trim((string) $a->getBatchPath(), '/');
+                $pathB = trim((string) $b->getBatchPath(), '/');
+                $numA = $pathA === '' ? -1 : substr_count($pathA, '/');
+                $numB = $pathB === '' ? -1 : substr_count($pathB, '/');
+                if ($numA !== $numB) {
+                    return $numA - $numB;
+                }
+                return (int) $a->getPosition() - (int) $b->getPosition();
             }
-        });
+        );
 
-        return $pages;
+        return array_values($pages);
     }
 
     public function getPublisherCommands(BatchInterface $batch, LoggerInterface $logger)

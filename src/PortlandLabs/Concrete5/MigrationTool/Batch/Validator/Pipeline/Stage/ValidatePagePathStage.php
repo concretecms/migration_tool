@@ -3,7 +3,6 @@ namespace PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Pipeline\Stage;
 
 use League\Pipeline\StageInterface;
 use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Message;
-use PortlandLabs\Concrete5\MigrationTool\Batch\Validator\Page\ValidatorTarget;
 
 defined('C5_EXECUTE') or die("Access Denied.");
 
@@ -13,9 +12,8 @@ class ValidatePagePathStage implements StageInterface
     {
         $subject = $result->getSubject();
         $page = $subject->getObject();
-
+        /** @var \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page $page */
         $path = $page->getBatchPath();
-
         if ($path) {
             $container = substr($path, 0, strrpos($path, '/'));
             if ($container) {

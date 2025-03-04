@@ -1,96 +1,119 @@
-<?php defined('C5_EXECUTE') or die("Access Denied.");
-$dh = Core::make('helper/date');
-/* @var \Concrete\Core\Localization\Service\Date $dh */
-?>
+<?php
 
+defined('C5_EXECUTE') or die('Access Denied.');
+
+/**
+ * @var Concrete\Core\Form\Service\Form $form
+ * @var Concrete\Core\Validation\CSRF\Token $token
+ * @var Concrete\Core\Page\View\PageView $view
+ *
+ * @var string $batchType
+ * @var PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch[]|PortlandLabs\Concrete5\MigrationTool\Entity\Export\Batch[] $batches
+ * @var Concrete\Core\Entity\Site\Site[] $sites
+ * @var Concrete\Core\Localization\Service\Date $dh
+ */
+?>
 <div class="ccm-dashboard-header-buttons">
-    <a href="javascript:void(0)" data-dialog="add-batch" class="btn btn-primary"><?=t("Add Batch")?></a>
+    <a href="javascript:void(0)" data-dialog="add-batch" class="btn btn-primary"><?= t('Add Batch') ?></a>
 </div>
 
-<?php if (count($batches)) {
+<?php
+if ($batches !== []) {
     ?>
-
     <table class="table">
         <thead>
-        <tr>
-            <th><?=t('Batch')?></th>
-            <th><?=t('Name')?></th>
-        </tr>
+            <tr>
+                <th><?= t('Batch') ?></th>
+                <th><?= t('Name') ?></th>
+            </tr>
         </thead>
         <tbody>
-        <?php foreach ($batches as $batch) {
-    ?>
-            <tr>
-                <td style="white-space: nowrap"><a href="<?=$view->action('view_batch', $batch->getID())?>"><?=$dh->formatDateTime($batch->getDate(), true)?></a></td>
-                <td width="100%"><?=$batch->getName()?></td>
-            </tr>
-        <?php 
-}
-    ?>
+            <?php
+            foreach ($batches as $batch) {
+                ?>
+                <tr>
+                    <td style="white-space: nowrap"><a href="<?= $view->action('view_batch', $batch->getID()) ?>"><?= $dh->formatDateTime($batch->getDate(), true) ?></a></td>
+                    <td width="100%"><?= h($batch->getName()) ?></td>
+                </tr>
+                <?php
+            }
+            ?>
         </tbody>
     </table>
-
-
-<?php 
+    <?php
 } else {
-    ?>
-    <p><?=$batchEmptyMessage?></p>
-<?php 
-} ?>
-
+    switch ($batchType) {
+        case 'import':
+            echo '<p>', t('You have not created any import batches. Create a batch and add content records to it.'), '</p>';
+            break;
+        case 'export':
+            echo '<p>', t('You have not created any export batches.'), '</p>';
+            break;
+    }
+}
+?>
 <div style="display: none">
     <div id="ccm-dialog-add-batch" class="ccm-ui">
-        <form method="post" action="<?=$view->action('add_batch')?>" enctype="multipart/form-data">
-            <?=Loader::helper("validation/token")->output('add_batch')?>
+        <form method="post" action="<?= $view->action('add_batch') ?>" enctype="multipart/form-data">
+            <?= $token->output('add_batch') ?>
+            <?php
+            if (count($sites) > 1) {
+                ?>
+                <div class="form-group">
+                    <?= $form->label('siteID', t('Site')) ?>
+                    <select name="siteID" class="form-control">
+                        <?php
+                        foreach ($sites as $site) {
+                            ?>
+                            <option value="<?= $site->getSiteID() ?>"><?= h($site->getSiteName()) ?></option>
+                            <?php
+                        }
+                        ?>
+                    </select>
+                </div>
+                <?php
+            }
+            ?>
             <div class="form-group">
-                <?=Loader::helper("form")->label('date', t('Date'))?>
-                <?=Loader::helper('form')->text('date',
-                    Core::make('date')->formatDateTime('now', true),
-                    array('disabled' => 'disabled')
-                )?>
-            </div>
-            <?php if (count($sites) > 1) { ?>
-            <div class="form-group">
-                <?=Loader::helper("form")->label('siteID', t('Site'))?>
-                <select name="siteID" class="form-control">
-                    <?php foreach($sites as $site) { ?>
-                         <option value="<?=$site->getSiteID()?>"><?=$site->getSiteName()?></option>
-                    <?php } ?>
-                </select>
-            </div>
-            <?php } ?>
-            <div class="form-group">
-                <?=Loader::helper("form")->label('name', t('Name'))?>
-                <?=Loader::helper('form')->text('name', '')?>
+                <?= $form->label('name', t('Name')) ?>
+                <?= $form->text('name', '') ?>
             </div>
 
-            <?php if ($batchType == 'import') { ?>
-            <fieldset>
-                <legend><?=t('Advanced')?></legend>
-                <div class="form-group">
-                    <?=Loader::helper("form")->label('mappingFile', t('Provide Mapping Presets'))?>
-                    <?=Loader::helper('form')->file('mappingFile')?>
-                </div>
-            </fieldset>
-            <?php } ?>
+            <?php
+            switch ($batchType) {
+                case 'import':
+                    ?>
+                    <fieldset>
+                        <legend><?= t('Advanced') ?></legend>
+                        <div class="form-group">
+                            <?= $form->label('mappingFile', t('Provide Mapping Presets')) ?>
+                            <?= $form->file('mappingFile') ?>
+                        </div>
+                        <?php
+                        View::element('import/batch/publish_to_sitemap', ['batch' => null, 'form' => $form], 'migration_tool')
+                        ?>
+                    </fieldset>
+                <?php
+            }
+            ?>
         </form>
         <div class="dialog-buttons">
-            <button class="btn btn-secondary float-start" onclick="jQuery.fn.dialog.closeTop()"><?=t('Cancel')?></button>
-            <button class="btn btn-primary float-end" onclick="$('#ccm-dialog-add-batch form').submit()"><?=t('Add Batch')?></button>
+            <button class="btn btn-secondary float-start" onclick="jQuery.fn.dialog.closeTop()"><?= t('Cancel') ?></button>
+            <button class="btn btn-primary float-end" onclick="$('#ccm-dialog-add-batch form').submit()"><?= t('Add Batch') ?></button>
         </div>
     </div>
 </div>
 
-<script type="text/javascript">
-    $(function() {
-        $('a[data-dialog=add-batch]').on('click', function() {
-            jQuery.fn.dialog.open({
-                element: '#ccm-dialog-add-batch',
-                modal: true,
-                width: 320,
-                title: '<?=t("Add Batch")?>',
-                height: 'auto'
-            });
+<script>
+$(function() {
+    $('a[data-dialog=add-batch]').on('click', function() {
+        jQuery.fn.dialog.open({
+            element: '#ccm-dialog-add-batch',
+            modal: true,
+            width: <?= $batchType === 'import' ? '600' : '320' ?>,
+            title: <?=json_encode(t('Add Batch')) ?>,
+            height: 'auto',
         });
     });
+});
 </script>

@@ -5,8 +5,6 @@ use Concrete\Core\Application\Application;
 use Concrete\Core\Support\Facade\Facade;
 use PortlandLabs\Concrete5\MigrationTool\Batch\BatchInterface;
 use Doctrine\ORM\Mapping as ORM;
-use PortlandLabs\Concrete5\MigrationTool\Publisher\Logger\StandardItemLogger;
-use PortlandLabs\Concrete5\MigrationTool\Publisher\Logger\StandardLogger;
 
 /**
  * @ORM\Entity

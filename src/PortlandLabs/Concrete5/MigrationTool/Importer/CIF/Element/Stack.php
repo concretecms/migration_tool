@@ -12,21 +12,33 @@ defined('C5_EXECUTE') or die("Access Denied.");
 
 class Stack implements ElementParserInterface
 {
+    /**
+     * @var \PortlandLabs\Concrete5\MigrationTool\Importer\CIF\Block\Manager
+     */
     protected $blockImporter;
 
+    /**
+     * @var \PortlandLabs\Concrete5\MigrationTool\Importer\CIF\Element\StyleSet
+     */
+    protected $styleSetImporter;
+    
     public function __construct()
     {
         $this->blockImporter = \Core::make('migration/manager/import/cif_block');
+        $this->styleSetImporter = new StyleSet();
     }
 
     protected function parseStack(\SimpleXMLElement $element)
     {
         if ($element->getName() == 'folder') {
             $item = new \PortlandLabs\Concrete5\MigrationTool\Entity\Import\StackFolder();
-        } elseif ((string) $element['type'] == 'global_area') {
-            $item = new \PortlandLabs\Concrete5\MigrationTool\Entity\Import\GlobalArea();
         } else {
-            $item = new \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Stack();
+            if ((string) $element['type'] == 'global_area') {
+                $item = new \PortlandLabs\Concrete5\MigrationTool\Entity\Import\GlobalArea();
+            } else {
+                $item = new \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Stack();
+            }
+            $item->setLocaleID((string) $element['section']);
         }
         $item->setName((string) $element['name']);
         $item->setPath((string) $element['path']);
@@ -43,9 +55,9 @@ class Stack implements ElementParserInterface
             foreach ($element->stacks->children() as $node) {
                 $stack = $this->parseStack($node);
                 $stack->setPosition($position);
-                if ($node->area->blocks->block) {
+                if (isset($node->area->blocks->block)) {
                     $blocks = $node->area->blocks->block;
-                } elseif ($node->area->block) { // 5.6
+                } elseif (isset($node->area->block)) { // 5.6
                     $blocks = $node->area->block;
                 }
                 if (isset($blocks)) {

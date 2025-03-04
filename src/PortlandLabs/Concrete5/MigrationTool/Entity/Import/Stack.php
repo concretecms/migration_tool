@@ -14,6 +14,21 @@ class Stack extends AbstractStack
         return 'stack';
     }
 
+    public function getLocaleID(): string
+    {
+        return $this->localeID;
+    }
+
+    /**
+     * @return $this
+     */
+    public function setLocaleID(string $value): self
+    {
+        $this->localeID = $value;
+
+        return $this;
+    }
+
     public function getStackFormatter()
     {
         return new StackFormatter($this);
@@ -23,5 +38,4 @@ class Stack extends AbstractStack
     {
         return new \PortlandLabs\Concrete5\MigrationTool\Entity\Publisher\Log\Object\Stack();
     }
-
 }

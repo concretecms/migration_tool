@@ -10,6 +10,8 @@ abstract class AbstractValidator implements ValidatorInterface
     /**
      * Returns the batch this object is in. I don't know why I didn't just
      * strongly tie these things together.
+     *
+     * @return \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch|null
      */
     protected function getBatch(PublishableInterface $object)
     {
