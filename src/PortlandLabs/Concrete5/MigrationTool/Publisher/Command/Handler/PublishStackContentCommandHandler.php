@@ -76,7 +76,22 @@ class PublishStackContentCommandHandler extends AbstractPageCommandHandler
             }
             $value = $importBlock->getBlockValue();
             $publisher = $value->getPublisher();
-            $publisher->publish($batch, $blockType, $stack, STACKS_AREA_NAME, $value);
+            $ccmBlock = $publisher->publish($batch, $blockType, $stack, STACKS_AREA_NAME, $value);
+            if (!is_object($ccmBlock)) {
+                $ccmBlock = null;
+            }
+            if ($ccmBlock !== null) {
+                $styleSet = $importBlock->getStyleSet();
+                if (is_object($styleSet)) {
+                    $styleSetPublisher = $styleSet->getPublisher();
+                    $publishedStyleSet = $styleSetPublisher->publish();
+                    $ccmBlock->setCustomStyleSet($publishedStyleSet);
+                }
+                $customTemplate = (string) $importBlock->getCustomTemplate();
+                if ($customTemplate !== '') {
+                    $ccmBlock->setCustomTemplate($customTemplate);
+                }
+            }
         }
     }
 }
