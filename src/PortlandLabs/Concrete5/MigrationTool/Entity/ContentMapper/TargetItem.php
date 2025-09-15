@@ -37,7 +37,7 @@ class TargetItem implements TargetItemInterface
 
     protected $item_name;
 
-    public function __construct(MapperInterface $mapper = null)
+    public function __construct(?MapperInterface $mapper = null)
     {
         if ($mapper) {
             $this->item_type = $mapper->getHandle();

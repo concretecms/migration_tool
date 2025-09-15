@@ -14,7 +14,7 @@ interface LoggerInterface
 {
 
     function getLog();
-    function openLog(Batch $batch, User $user = null);
+    function openLog(Batch $batch, ?User $user = null);
     function closeLog(Batch $batch);
     function logMessages($messages);
     function logEntry(Entry $entry);

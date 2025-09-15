@@ -13,7 +13,7 @@ class Tree implements ElementParserInterface
 {
     protected function walk(\SimpleXMLElement $node,
     \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Tree $tree,
-    TreeNode $parent = null)
+    ?TreeNode $parent = null)
     {
         foreach ($node->children() as $child) {
             $n = new TreeNode();
