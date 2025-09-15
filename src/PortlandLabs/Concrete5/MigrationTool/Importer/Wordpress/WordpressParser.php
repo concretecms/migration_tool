@@ -47,7 +47,7 @@ class WordpressParser implements FileParserInterface
     }
 
     // TODO maybe $file can't be null and we need to reparse the xml inside this function too
-    public function addContentObjectCollectionsToBatch($file = null, Batch $batch)
+    public function addContentObjectCollectionsToBatch($file, Batch $batch)
     {
         $manager = \Core::make('migration/manager/importer/wordpress');
 //        $simplexml = simplexml_load_file($file);
