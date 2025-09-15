@@ -38,7 +38,7 @@ class TreeJsonFormatter extends AbstractTreeJsonFormatter
             }
 
             $node->id = $page->getId();
-            $node->pagePath =  '/' . $page->getBatchPath();
+            $node->pagePath =  '/' . ltrim($page->getBatchPath() ?? '', '/');
             $node->pageType = $page->getType();
             $node->pageTemplate = $page->getTemplate();
             if (!$skipItem) {
