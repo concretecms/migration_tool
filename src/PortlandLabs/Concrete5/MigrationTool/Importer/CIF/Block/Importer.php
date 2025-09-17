@@ -13,7 +13,7 @@ class Importer extends AbstractImporter
         $xml = (string) $node->asXML();
 
         return $value
-            ->setOriginal($xml)
+            ->setOriginalValue($xml)
             ->setValue($xml)
         ;
     }

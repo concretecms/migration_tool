@@ -30,7 +30,7 @@ class ImportedBlockValue extends BlockValue
     /**
      * @return $this
      */
-    public function setOriginal(?string $value): self
+    public function setOriginalValue(?string $value): self
     {
         $this->originalValue = $value;
 
