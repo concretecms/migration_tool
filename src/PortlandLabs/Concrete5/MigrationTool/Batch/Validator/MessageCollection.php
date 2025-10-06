@@ -30,7 +30,7 @@ class MessageCollection extends ArrayCollection implements \JsonSerializable
         return parent::add($element);
     }
 
-    public function addMessages(MessageCollection $collection = null)
+    public function addMessages(?MessageCollection $collection = null)
     {
         if (is_object($collection) && count($collection)) {
             foreach ($collection as $message) {

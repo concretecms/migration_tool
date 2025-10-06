@@ -10,7 +10,7 @@ defined('C5_EXECUTE') or die("Access Denied.");
 
 class FilePublisher implements PublisherInterface
 {
-    public function publish(AttributeKey $ak, Package $pkg = null)
+    public function publish(AttributeKey $ak, ?Package $pkg = null)
     {
         $key = new \Concrete\Core\Entity\Attribute\Key\FileKey();
         $key->setAttributeKeyHandle($ak->getHandle());

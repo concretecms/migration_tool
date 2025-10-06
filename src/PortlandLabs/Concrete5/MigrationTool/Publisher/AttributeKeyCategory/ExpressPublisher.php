@@ -21,7 +21,7 @@ class ExpressPublisher implements PublisherInterface
         $this->entity = $entity;
     }
 
-    public function publish(AttributeKey $ak, Package $pkg = null)
+    public function publish(AttributeKey $ak, ?Package $pkg = null)
     {
         $key = new \Concrete\Core\Entity\Attribute\Key\ExpressKey();
         $key->setEntity($this->entity);

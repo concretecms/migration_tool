@@ -30,7 +30,7 @@ abstract class Entry
      **/
     protected $log;
 
-    public function __construct(LoggableObject $object = null)
+    public function __construct(?LoggableObject $object = null)
     {
         $this->timestamp = new \DateTime();
         if (is_object($object)) {

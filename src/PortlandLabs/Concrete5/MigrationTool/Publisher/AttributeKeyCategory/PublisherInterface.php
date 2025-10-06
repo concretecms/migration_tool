@@ -13,5 +13,5 @@ interface PublisherInterface
      *
      * @return \Concrete\Core\Attribute\Key\Key
      */
-    public function publish(AttributeKey $ak, Package $pkg = null);
+    public function publish(AttributeKey $ak, ?Package $pkg = null);
 }

@@ -10,7 +10,7 @@ defined('C5_EXECUTE') or die("Access Denied.");
 class FatalErrorEntryFormatter extends AbstractEntryFormatter
 {
 
-    public function getEntryStatusElement(LoggableObject $object = null)
+    public function getEntryStatusElement(?LoggableObject $object = null)
     {
         $div = new Element('div', '', ['class' => 'text-danger']);
         $div->appendChild(new Element('span', t('Fatal Error')));
@@ -19,7 +19,7 @@ class FatalErrorEntryFormatter extends AbstractEntryFormatter
         return $div;
     }
 
-    public function getDescriptionElement(LoggableObject $object = null)
+    public function getDescriptionElement(?LoggableObject $object = null)
     {
         $entry = $this->entry;
         /**

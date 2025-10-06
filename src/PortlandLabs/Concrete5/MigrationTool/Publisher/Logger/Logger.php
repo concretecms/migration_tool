@@ -79,7 +79,7 @@ class Logger implements LoggerInterface
         $this->entityManager->flush();
     }
 
-    public function openLog(Batch $batch, User $user = null)
+    public function openLog(Batch $batch, ?User $user = null)
     {
         $log = new Log();
         $log->setUser($user);
