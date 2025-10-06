@@ -53,6 +53,7 @@ class Stack implements ElementParserInterface
         if ($element->stacks) {
             $position = 0;
             foreach ($element->stacks->children() as $node) {
+                $blocks = null;
                 $stack = $this->parseStack($node);
                 $stack->setPosition($position);
                 if (isset($node->area->blocks->block)) {
