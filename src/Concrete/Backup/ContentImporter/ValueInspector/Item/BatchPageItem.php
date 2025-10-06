@@ -20,13 +20,21 @@ class BatchPageItem extends PageItem
     {
 
         // First, does the passed path exist in the site? If so, we consider this solved
-        // This is handled by the parent class
-        $object = parent::getContentObject();
-        if ($object) {
-            return $object;
+        $cPath = $this->getReference();
+        $site = $this->batch->getSite();
+        if ($cPath == '/' || $cPath == '') {
+            if ($site) {
+                return $site->getSiteHomePageObject('ACTIVE');
+            } else {
+                return Page::getByID(Page::getHomePageID(), 'ACTIVE');
+            }
         }
 
-        $cPath = $this->getReference();
+        $c = Page::getByPath($cPath, 'ACTIVE', $site);
+        if (is_object($c) && !$c->isError()) {
+            return $c;
+        }
+
         $entityManager = \ORM::entityManager();
 
         // Now, let's check to see if the path matches the original path of a page in the batch
