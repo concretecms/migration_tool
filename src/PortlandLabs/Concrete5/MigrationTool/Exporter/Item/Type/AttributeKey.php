@@ -31,7 +31,7 @@ class AttributeKey extends AbstractType
     {
         $ak = Key::getInstanceByID($exportItem->getItemIdentifier());
 
-        return array($ak->getAttributeKeyDisplayName());
+        return array($ak ? $ak->getAttributeKeyDisplayName() : h('<' . t('Deleted Attribute Key') . '>'));
     }
 
     public function getItemsFromRequest($array)
