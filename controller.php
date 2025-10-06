@@ -2,6 +2,7 @@
 namespace Concrete\Package\MigrationTool;
 
 use Concrete\Core\Asset\AssetList;
+use Concrete\Core\Database\Connection\Connection;
 use Concrete\Core\Messenger\MessageBusManager;
 use Concrete\Core\Package\Package;
 use Concrete\Core\Page\Type\Type;
@@ -28,12 +29,13 @@ use PortlandLabs\Concrete5\MigrationTool\Publisher\Block\Manager as BlockPublish
 use PortlandLabs\Concrete5\MigrationTool\Publisher\ContentImporter\ValueInspector\InspectionRoutine\BatchPageRoutine;
 use PortlandLabs\Concrete5\MigrationTool\Publisher\Routine\Manager as PublisherManager;
 use SinglePage;
+use Throwable;
 
 class Controller extends Package
 {
     protected $pkgHandle = 'migration_tool';
     protected $appVersionRequired = '9.0.0';
-    protected $pkgVersion = '9.1.0';
+    protected $pkgVersion = '9.2.0';
     protected $pkgAutoloaderMapCoreExtensions = true;
     protected $pkgAutoloaderRegistries = array(
         'src/PortlandLabs/Concrete5/MigrationTool' => '\PortlandLabs\Concrete5\MigrationTool',
@@ -282,5 +284,13 @@ class Controller extends Package
         $pkg = \Package::getByHandle('migration_tool');
         $this->installSinglePages($pkg);
         $this->installPageTypes($pkg);
+        try {
+            $cn = $this->app->make(Connection::class);
+            // Before version 9.2.0 we didn't have the MigrationImportImportedBlockValues.originalValue field.
+            // The code rewrites "value" and its original content is already lost: so this query won't fix that,
+            // but at least we won't break existing installations.
+            $cn->executeStatement('UPDATE MigrationImportImportedBlockValues SET originalValue = value WHERE originalValue IS NULL');
+        } catch (Throwable $_) {
+        }
     }
 }

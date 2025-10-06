@@ -2,81 +2,138 @@
 
 namespace PortlandLabs\Concrete5\MigrationTool\Batch\Command;
 
-use PortlandLabs\Concrete5\MigrationTool\Batch\ContentMapper\Item\Item;
-use PortlandLabs\Concrete5\MigrationTool\Batch\ContentMapper\PresetManager;
+use Doctrine\ORM\EntityManagerInterface;
+use Generator;
+use PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch;
 use PortlandLabs\Concrete5\MigrationTool\Entity\Import\BlockValue\ImportedBlockValue;
 
 class NormalizePagePathsCommandHandler
 {
-
     public function __invoke(NormalizePagePathsCommand $command)
     {
-        // Since batch is serialized we do this:
-        $em = \Database::connection()->getEntityManager();
-        $batch = $em->getRepository('PortlandLabs\Concrete5\MigrationTool\Entity\Import\Batch')->findOneById($command->getBatchId());
+        $em = app(EntityManagerInterface::class);
+        $batch = $em->find(Batch::class, $command->getBatchId());
         $pages = $batch->getPages();
-        $paths = [];
-        foreach($pages as $page) {
-            $paths[] = trim($page->getOriginalPath(), '/');
-        }
-        $n = count($paths);
-        $common = '';
-        $offset = 1;
-        if (isset($paths[0]) && $paths[0]) {
-            while (strpos($paths[0], '/', $offset) !== false) {
-                $offset = strpos($paths[0], '/', $offset) + 1;
-                $c = substr($paths[0], 0, $offset);
-                for ($i = 1; $i < $n; ++$i) {
-                    if (substr($paths[$i], 0, $offset) !== $c) {
-                        break 2;
-                    }
-                }
-                $common = $c;
+        $pagesToNormalize = [];
+        foreach ($pages as $page) {
+            if ($batch->isPublishToSitemap() || !$page->canNormalizePath()) {
+                $page->setBatchPath($page->getOriginalPath());
+            } else {
+                $pagesToNormalize[] = $page;
             }
         }
-
-        if (count($pages) == 1) {
-            // Then $common equals the part of the path up to the last slug.
-            // So if our only page is /path/to/my/page, then $common = '/path/to/my';
-            $common = substr($pages[0]->getOriginalPath(), 0, strrpos($pages[0]->getOriginalPath(), '/'));
-        }
-        if ($common) {
-            $common = '/' . trim($common, '/');
-            $contentSearchURL = "/\{ccm:export:page:" . preg_quote($common, '/') . "(.*?)\}/i";
-            $contentReplaceURL = "{ccm:export:page:$1}";
-            foreach ($pages as $page) {
-                $originalPath = $page->getOriginalPath();
-                $newPath = substr($originalPath, strlen($common));
-
-                if ($page->canNormalizePath()) {
-                    $page->setBatchPath($newPath);
-                }
-
-                $areas = $page->getAreas();
-                foreach ($areas as $area) {
-                    $blocks = $area->getBlocks();
-                    foreach ($blocks as $block) {
-                        $value = $block->getBlockValue();
-                        if ($value instanceof ImportedBlockValue) {
-                            $content = preg_replace($contentSearchURL, $contentReplaceURL, $value->getValue());
-                            // doctrine is doing some dumb shit here so let's do a direct query
-                            $db = $em->getConnection();
-                            $db->executeQuery('update MigrationImportImportedBlockValues set value = ? where id = ?',
-                                array($content, $value->getID())
-                            );
-                        }
-                    }
-                }
-            }
-        } else {
-            foreach ($pages as $page) {
-                if ($page->canNormalizePath()) {
-                    $page->setBatchPath($page->getOriginalPath());
-                }
-            }
-        }
+        $map = $this->normalizePagePaths($pagesToNormalize);
+        $this->applyMapToPageLinks($pages, $batch, $map);
         $em->flush();
     }
 
+    /**
+     * Set the "Batch Path" of the pages, and returns a map from the "original" page paths and the "batch" paths.
+     *
+     * @param \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page[] $pages
+     */
+    private function normalizePagePaths(array $pagesToNormalize): array
+    {
+        $map = [];
+        $commonPrefix = $this->calculateCommonPathPrefix($pagesToNormalize);
+        foreach ($pagesToNormalize as $page) {
+            $originalPath = '/' . ltrim($page->getOriginalPath() ?? '', '/');
+            $newPath = substr($originalPath, strlen($commonPrefix) - 1);
+            $page->setBatchPath($newPath);
+            $map[$originalPath] = $newPath;
+        }
 
+        return $map;
+    }
+
+    /**
+     * Calculate the common prefix of page paths.
+     *
+     * @param \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page[] $pages
+     *
+     * @example for 0 pages: you'll get '/'
+     * @example for 1 page at '/path/to/my/page': you'll get '/path/to/my/'
+     * @example for 2 pages at '/path/to/my/page' and '/path/to/another/page': you'll get '/path/to/'
+     * @example for 2 pages at '/first/page' and '/second/page': you'll get '/'
+     */
+    private function calculateCommonPathPrefix(array $pages): string
+    {
+        $commonSlugs = null;
+        foreach ($pages as $page) {
+            $pageSlugs = preg_split('{/}', $page->getOriginalPath() ?? '', -1, PREG_SPLIT_NO_EMPTY);
+            array_pop($pageSlugs);
+            if ($commonSlugs === null) {
+                $commonSlugs = $pageSlugs;
+            } else {
+                $newCommonSlugs = [];
+                foreach ($commonSlugs as $index => $slug) {
+                    if (!isset($pageSlugs[$index]) || $pageSlugs[$index] !== $slug) {
+                        break;
+                    }
+                    $newCommonSlugs[] = $slug;
+                }
+                $commonSlugs = $newCommonSlugs;
+            }
+            if ($commonSlugs === []) {
+                break;
+            }
+        }
+        if ($commonSlugs === null || $commonSlugs === []) {
+            return '/';
+        }
+
+        return '/' . implode('/', $commonSlugs) . '/';
+    }
+
+    /**
+     * Update the '{ccm:export:page:...}` placeholders of the blocks.
+     *
+     * @param \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page[] $pages
+     * @param array $map the map from the "original" page paths and the "batch" paths.
+     */
+    private function applyMapToPageLinks(array $pages, Batch $batch, array $map): void
+    {
+        $pathPrefix = $batch->isPublishToSitemap() ? '' : "/!import_batches/{$batch->getID()}";
+        foreach ($this->listImportedBlockValues($pages) as $importedBlockValue) {
+            $value = $importedBlockValue->getOriginalValue();
+            if ($value) {
+                $value = preg_replace_callback(
+                    '/\{ccm:export:page:(?<path>.*?)\}/',
+                    static function (array $matches) use (&$map, $pathPrefix): string {
+                        $path = '/' . ltrim($matches['path'], '/');
+                        if (isset($map[$path])) {
+                            $path = $pathPrefix . $map[$path];
+                        }
+                        if ($path === '/') {
+                            $path = '';
+                        }
+                        return "{ccm:export:page:{$path}}";
+                    },
+                    $value
+                );
+            }
+            $importedBlockValue->setValue($value);
+        }
+    }
+
+    /**
+     * List all the ImportedBlockValue instances owned by pages.
+     *
+     * @param \PortlandLabs\Concrete5\MigrationTool\Entity\Import\Page[] $pages
+     *
+     * @return \PortlandLabs\Concrete5\MigrationTool\Entity\Import\BlockValue\ImportedBlockValue[]
+     */
+    private function listImportedBlockValues(array $pages): Generator
+    {
+        foreach ($pages as $page) {
+            foreach ($page->getAreas() as $area) {
+                foreach ($area->getBlocks() as $block) {
+                    $value = $block->getBlockValue();
+                    if ($value instanceof ImportedBlockValue) {
+                        yield $value;
+                    }
+                }
+            }
+        }
+    }
 }

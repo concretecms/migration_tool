@@ -15,12 +15,12 @@ class PageItemValidator implements ValidatorInterface
         if (is_object($item->getContentObject())) {
             return true;
         }
-
+        $itemPath = $this->normalizePath($item->getReference());
         foreach ($batch->getPages() as $page) {
-            if ($page->getBatchPath() == $item->getReference()) {
+            if ($this->normalizePath($page->getBatchPath()) === $itemPath) {
                 return true;
             }
-            if ($page->getOriginalPath() == $item->getReference()) {
+            if ($this->normalizePath($page->getOriginalPath()) === $itemPath) {
                 return true;
             }
         }
@@ -31,5 +31,10 @@ class PageItemValidator implements ValidatorInterface
         $messages->add(
             new Message(t('Referenced page at path %s cannot be found in the site or in the current content batch.', $item->getReference()), Message::E_WARNING)
         );
+    }
+
+    private function normalizePath(?string $path): string
+    {
+        return '/' . ltrim($path ?? '', '/');
     }
 }
