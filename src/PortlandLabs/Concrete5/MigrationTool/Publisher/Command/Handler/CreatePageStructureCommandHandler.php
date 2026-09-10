@@ -89,7 +89,9 @@ class CreatePageStructureCommandHandler extends AbstractPageCommandHandler
         ];
         $localeInfo = $mtPage->getLocaleRoot();
         if ($localeInfo === null || $batch->isPublishToSitemap() !== true || $this->localeAlreadyExists($batch, $localeInfo)) {
-            return $ccmParentPage->add($pageType, $data);
+            // Page::add() ignores $data['pTemplateID'] and falls back to the page type's
+            // default template unless the template is passed as the third argument.
+            return $ccmParentPage->add($pageType, $data, $pageTemplate ?: false);
         }
         if (!$pageTemplate) {
             throw new UserMessageException(t('Missing page template when creating the home of a language'));
