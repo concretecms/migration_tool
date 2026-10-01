@@ -12,7 +12,7 @@ class MessageCollection extends ArrayCollection implements \JsonSerializable
         return new MessageCollectionFormatter($this);
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         $result = array();
         foreach ($this as $message) {

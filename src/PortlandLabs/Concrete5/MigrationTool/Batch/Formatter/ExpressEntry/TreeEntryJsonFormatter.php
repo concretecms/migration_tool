@@ -16,7 +16,7 @@ class TreeEntryJsonFormatter implements \JsonSerializable
         $this->entry = $entry;
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         $nodes = array();
         $entry = $this->entry;

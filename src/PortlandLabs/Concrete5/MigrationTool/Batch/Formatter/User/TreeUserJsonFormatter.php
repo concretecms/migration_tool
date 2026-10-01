@@ -15,7 +15,7 @@ class TreeUserJsonFormatter implements \JsonSerializable
         $this->user = $user;
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         $nodes = array();
         $user = $this->user;

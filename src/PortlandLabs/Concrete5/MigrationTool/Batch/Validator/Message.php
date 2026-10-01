@@ -19,7 +19,17 @@ class Message implements \JsonSerializable, \Serializable
         $this->text = $text;
     }
 
-    public function serialize()
+    public function __serialize(): array
+    {
+        return [$this->severity, $this->text];
+    }
+
+    public function __unserialize(array $data): void
+    {
+        [$this->severity, $this->text] = $data;
+    }
+
+    public function serialize(): ?string
     {
         return serialize([
             $this->severity,
@@ -27,12 +37,9 @@ class Message implements \JsonSerializable, \Serializable
         ]);
     }
 
-    public function unserialize($serialized)
+    public function unserialize($serialized): void
     {
-        list(
-            $this->severity,
-            $this->text,
-            ) = unserialize($serialized);
+        [$this->severity, $this->text] = unserialize($serialized, ['allowed_classes' => false]);
     }
 
     /**
@@ -77,7 +84,7 @@ class Message implements \JsonSerializable, \Serializable
         return (string) $this->text;
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         $formatter = new MessageJsonFormatter($this);
 

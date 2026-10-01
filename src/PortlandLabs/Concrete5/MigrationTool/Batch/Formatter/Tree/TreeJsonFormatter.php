@@ -18,7 +18,7 @@ class TreeJsonFormatter extends AbstractTreeJsonFormatter
         $parent->children[] = $node;
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         $response = array();
         foreach ($this->collection->getTrees() as $tree) {
