@@ -14,7 +14,7 @@ class TreeSiteJsonFormatter implements \JsonSerializable
         $this->site = $site;
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         $nodes = array();
         $site = $this->site;

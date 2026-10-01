@@ -26,7 +26,7 @@ class TreePageJsonFormatter implements \JsonSerializable
         $this->batch = $batch;
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         $collection = $this->page->getCollection();
         $nodes = $this->getPageDetailNodes();

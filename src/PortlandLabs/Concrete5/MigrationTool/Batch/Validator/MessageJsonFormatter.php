@@ -14,7 +14,7 @@ class MessageJsonFormatter implements \JsonSerializable
         $this->formatter = new MessageFormatter($message);
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return array(
             'severity' => $this->message->getSeverity(),

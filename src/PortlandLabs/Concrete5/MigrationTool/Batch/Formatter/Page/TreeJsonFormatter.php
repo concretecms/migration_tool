@@ -7,7 +7,7 @@ defined('C5_EXECUTE') or die("Access Denied.");
 
 class TreeJsonFormatter extends AbstractTreeJsonFormatter
 {
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         $response = array();
         foreach ($this->collection->getPages() as $page) {
